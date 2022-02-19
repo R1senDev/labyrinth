@@ -1,0 +1,32 @@
+* {
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+button {
+	font-size: 50px;
+}
+
+#down {
+	margin-top: 20px;
+}
+
+#up, #down {
+	margin-left: 85px;
+	padding: 0 18px 7px 18px;
+}
+
+#right {
+	margin-left: 100px;
+}
+
+#left, #right {
+	padding: 0 5px 7px 5px;
+	margin-top: 20px;
+}
+
+.buttons {
+	text-align: left;
+	margin-left: 40%;
+}
