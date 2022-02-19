@@ -258,3 +258,65 @@ function executeGenerator(id) {
 		killGenerator(id);
 	}
 }
+
+// Игрок
+let player = {
+	x: 1,
+	y: 1,
+	points: 0,
+	timePoints: 100,
+	// Каждую секунду уменьшает timePoints на 1
+	timePointsDescreaser: setInterval(function() {
+		if (player.timePoints <= 10) {
+			timePoints--;
+		}
+	}, 1000),
+	isFinished: function() {
+		if ((finish.x == player.x) && (finish.y == player.y)) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	go: function(dir) {
+		switch (dir) {
+			case 'up':
+				if (!world.get(`${player.x}:${player.y - 1}`).isWall) {
+					player.y--;
+				}
+				break;
+			case 'right':
+				if (!world.get(`${player.x + 1}:${player.y}`).isWall) {
+					player.x++;
+				}
+				break;
+			case 'down':
+				if (!world.get(`${player.x}:${player.y + 1}`).isWall) {
+					player.y++;
+				}
+				break;
+			case 'left':
+				if (!world.get(`${player.x - 1}:${player.y}`).isWall) {
+					player.x--;
+				}
+				break;
+		}
+	},
+};
+
+// Финиш
+let finish = {
+	x: -1,
+	y: -1,
+	setFinish: function() {
+		for (let x = mapWidth - 1; x >= 0; x--) {
+			for (let y = mapHeight - 1; y >= 0; y--) {
+				if (!map.get(`${x}:${y}`).isWall) {
+					finish.x = x;
+					finish.y = y;
+					break;
+				}
+			}
+		}
+	},
+};
