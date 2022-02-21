@@ -8,12 +8,9 @@ const down = document.getElementById('down');
 const left = document.getElementById('left');
 // Прочие настройки. Балуйся.
 let debug = true;
-let timeoutError = new Error();
-timeoutError.name = 'TimeoutError';
-timeoutError.message = 'The map has been generated for too long';
 let box = 5;
-let mapWidth = 70;
-let mapHeight = 70;
+let mapWidth = 69;  // Молчите, пожалуйста. Это оп-
+let mapHeight = 69; // тимальное значение ._.
 canvas.width = mapWidth * box;
 canvas.height = mapHeight * box;
 
@@ -37,291 +34,14 @@ function writeToLog(str) {
 
 // Коллекция с картой
 let map = new Map();
-// Массив штуковин-бегающих-по-карте-и-генерирующих
-// лабиринт
-let generators = [new Generator(7, 7)];
 
-// Определение содержимого карты и резервация места
-// на нее
+// Определение содержимого карты
 function defineMapContent() {
 	for (let y = -2; y <= mapHeight + 2; y++) {
 		for (let x = -2; x <= mapWidth + 2; x++) {
 			map.set(`${x}:${y}`, {isWall: false, isGenerated: false});
 		}
 	}
-	// Костыль. Выдёргивать пока что нельзя.
-	map.set('NaN:0', {isWall: true, isGenerated: true});
-	map.set('0:NaN', {isWall: true, isGenerated: true});
-	map.set('NaN:NaN', {isWall: true, isGenerated: true});
-}
-
-// Функция-конструктор штуковин-бегающих-по-карте-и-
-// генерирующих-лабиринт (далее ШБпКиГЛ), создающих-
-// ся от другой ШБпКиГЛ
-function Generator(parentGeneratorId) {
-	// Не осуждайте
-	if ((!map.get(`${parentGeneratorId.x}:${parentGeneratorId.y - 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x}:${parentGeneratorId.y - 1}`).isWall)) {
-		this.x = parentGeneratorId.x;
-		this.y = parentGeneratorId.y - 1;
-	} else {
-		if ((!map.get(`${parentGeneratorId.x + 1}:${parentGeneratorId.y - 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x + 1}:${parentGeneratorId.y - 1}`).isWall)) {
-			this.x = parentGeneratorId.x + 1;
-			this.y = parentGeneratorId.y - 1;
-		} else {
-			if ((!map.get(`${parentGeneratorId.x + 1}:${parentGeneratorId.y}`).isGenerated) && (!map.get(`${parentGeneratorId.x + 1}:${parentGeneratorId.y}`).isWall)) {
-				this.x = parentGeneratorId.x + 1;
-				this.y = parentGeneratorId.y;
-			} else {
-				if ((!map.get(`${parentGeneratorId.x + 1}:${parentGeneratorId.y + 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x + 1}:${parentGeneratorId.y + 1}`).isWall)) {
-					this.x = parentGeneratorId.x + 1;
-					this.y = parentGeneratorId.y + 1;
-				} else {
-					if ((!map.get(`${parentGeneratorId.x}:${parentGeneratorId.y + 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x}:${parentGeneratorId.y + 1}`).isWall)) {
-						this.x = parentGeneratorId.x;
-						this.y = parentGeneratorId.y + 1;
-					} else {
-						if ((!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y + 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y + 1}`).isWall)) {
-							this.x = parentGeneratorId.x - 1;
-							this.y = parentGeneratorId.y + 1;
-						} else {
-							if ((!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y + 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y + 1}`).isWall)) {
-								this.x = parentGeneratorId.x - 1;
-								this.y = parentGeneratorId.y + 1;
-							} else {
-								if ((!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y}`).isGenerated) && (!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y}`).isWall)) {
-									this.x = parentGeneratorId.x - 1;
-									this.y = parentGeneratorId.y;
-								} else {
-									if ((!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y - 1}`).isGenerated) && (!map.get(`${parentGeneratorId.x - 1}:${parentGeneratorId.y - 1}`).isWall)) {
-										this.x = parentGeneratorId.x - 1;
-										this.y = parentGeneratorId.y - 1;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	this.cameFrom = '';
-}
-
-// Функция-конструктор ШБпКиГЛ, создающихся в коор-
-// динатах (x, y)
-function Generator(x, y) {
-	this.x = x;
-	this.y = y;
-	this.cameFrom = '';
-}
-
-// Перемещает ШБпКиГЛ
-function generatorGo(dir, id) {
-	switch (dir) {
-		case 'up':
-			generators[id].y -= 2;
-			generators[id].cameFrom = 'down';
-			break;
-		case 'right':
-			generators[id].x += 2;
-			generators[id].cameFrom = 'down';
-			break;
-		case 'down':
-			generators[id].y += 2;
-			generators[id].cameFrom = 'down';
-			break;
-		case 'left':
-			generators[id].x -= 2;
-			generators[id].cameFrom = 'down';
-			break;
-	}
-
-	for (let x = generators[id].x - 1; x <= generators[id].x + 1; x++) {
-		for (let y = generators[id].y - 1; y <= generators[id].y + 1; y++) {
-			map.set(`${x}:${y}`, {isGenerated: true, isWall: true});
-		}
-	}
-
-	map.get(`${generators[id].x}:${generators[id].y}`).isWall = false;
-	
-	switch (generators[id].cameFrom) {
-		case 'up':
-			map.get(`${generators[id].x}:${generators[id].y + 1}`).isWall = false;
-			break;
-		case 'right':
-			map.get(`${generators[id].x + 1}:${generators[id].y}`).isWall = false;
-			break;
-		case 'down':
-			map.get(`${generators[id].x}:${generators[id].y - 1}`).isWall = false;
-			break;
-		case 'left':
-			map.get(`${generators[id].x - 1}:${generators[id].y}`).isWall = false;
-			break;
-	}
-}
-
-// Делит ШБпКиГЛ
-function splitGenerator(id) {
-	if (Math.random() <= 1) {
-		generators.push(new Generator(id));
-	}
-}
-
-// Убивает ШБпКиГЛ
-function killGenerator(id) {
-	for (let i = id; i < generators.length; i++) { // generators.length - 1?
-		generators[i] = generators[i + 1];
-	}
-
-	generators.pop();
-}
-
-// Обрабатывает ШБпКиГЛ 
-function executeGenerator(id) {
-	// Такая конструкция, использованная вместо or, не
-	// замедляет работу
-	writeToLog(`Reading ${generators[id].x}:${generators[id].y - 2}...`);
-	if ((!map.get(`${generators[id].x}:${generators[id].y - 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y - 2}`).isGenerated)) {
-		let ok = false;
-		let random;
-		while (!ok) {
-			random = Math.floor(Math.random() * 4);
-			switch (random) {
-				case 0:
-					if ((!map.get(`${generators[id].x}:${generators[id].y - 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y - 2}`).isGenerated)) {
-						generatorGo('up', id);
-						ok = true;
-					}
-					break;
-				case 1:
-					if ((!map.get(`${generators[id].x + 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x + 2}:${generators[id].y}`).isGenerated)) {
-						generatorGo('right', id);
-						ok = true;
-					}
-					break;
-				case 2:
-					if ((!map.get(`${generators[id].x}:${generators[id].y + 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y + 2}`).isGenerated)) {
-						generatorGo('down', id);
-						ok = true;
-					}
-					break;
-				case 3:
-					if ((!map.get(`${generators[id].x - 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x - 2}:${generators[id].y}`).isGenerated)) {
-						generatorGo('left', id);
-						ok = true;
-					}
-					break;
-			}
-		}
-	}
-
-	try {
-		if ((!map.get(`${generators[id].x + 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x + 2}:${generators[id].y}`).isGenerated)) {
-			let ok = false;
-			let random;
-			while (!ok) {
-				random = Math.floor(Math.random() * 4);
-				switch (random) {
-					case 0:
-						if ((!map.get(`${generators[id].x}:${generators[id].y - 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y - 2}`).isGenerated)) {
-							generatorGo('up', id);
-							ok = true;
-						}
-						break;
-					case 1:
-						if ((!map.get(`${generators[id].x + 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x + 2}:${generators[id].y}`).isGenerated)) {
-							generatorGo('right', id);
-							ok = true;
-						}
-						break;
-					case 2:
-						if ((!map.get(`${generators[id].x}:${generators[id].y + 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y + 2}`).isGenerated)) {
-							generatorGo('down', id);
-							ok = true;
-						}
-						break;
-					case 3:
-						if ((!map.get(`${generators[id].x - 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x - 2}:${generators[id].y}`).isGenerated)) {
-							generatorGo('left', id);
-							ok = true;
-						}
-						break;
-				}
-			}
-		}
-
-		if ((!map.get(`${generators[id].x}:${generators[id].y + 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y + 2}`).isGenerated)) {
-			let ok = false;
-			let random;
-			while (!ok) {
-				random = Math.floor(Math.random() * 4);
-				switch (random) {
-					case 0:
-						if ((!map.get(`${generators[id].x}:${generators[id].y - 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y - 2}`).isGenerated)) {
-							generatorGo('up', id);
-							ok = true;
-						}
-						break;
-					case 1:
-						if ((!map.get(`${generators[id].x + 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x + 2}:${generators[id].y}`).isGenerated)) {
-							generatorGo('right', id);
-							ok = true;
-						}
-						break;
-					case 2:
-						if ((!map.get(`${generators[id].x}:${generators[id].y + 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y + 2}`).isGenerated)) {
-							generatorGo('down', id);
-							ok = true;
-						}
-						break;
-					case 3:
-						if ((!map.get(`${generators[id].x - 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x - 2}:${generators[id].y}`).isGenerated)) {
-							generatorGo('left', id);
-							ok = true;
-						}
-						break;
-				}
-			}
-		}
-
-		if ((!map.get(`${generators[id].x - 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x - 2}:${generators[id].y}`).isGenerated)) {
-			let ok = false;
-			let random;
-			while (!ok) {
-				random = Math.floor(Math.random() * 4);
-				switch (random) {
-					case 0:
-						if ((!map.get(`${generators[id].x}:${generators[id].y - 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y - 2}`).isGenerated)) {
-							generatorGo('up', id);
-							ok = true;
-						}
-						break;
-					case 1:
-						if ((!map.get(`${generators[id].x + 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x + 2}:${generators[id].y}`).isGenerated)) {
-							generatorGo('right', id);
-							ok = true;
-						}
-						break;
-					case 2:
-						if ((!map.get(`${generators[id].x}:${generators[id].y + 2}`).isWall) && (!map.get(`${generators[id].x}:${generators[id].y + 2}`).isGenerated)) {
-							generatorGo('down', id);
-							ok = true;
-						}
-						break;
-					case 3:
-						if ((!map.get(`${generators[id].x - 2}:${generators[id].y}`).isWall) && (!map.get(`${generators[id].x - 2}:${generators[id].y}`).isGenerated)) {
-							generatorGo('left', id);
-							ok = true;
-						}
-						break;
-				}
-			}
-			splitGenerator(id);
-		} else {
-			killGenerator(id);
-		}
-	} catch {}
 }
 
 // Игрок
@@ -337,6 +57,7 @@ let player = {
 		}
 	}, 1000),
 	isFinished: function() {
+		//writeToLog(`(finish.x == player.x) && (finish.y == player.y) == ${(finish.x == player.x) && (finish.y == player.y)}`)
 		if ((finish.x == player.x) && (finish.y == player.y)) {
 			return true;
 		} else {
@@ -344,7 +65,7 @@ let player = {
 		}
 	},
 	go: function(dir) {
-		writeToLog(`In progress: player.go(${dir})`);
+		//writeToLog(`In progress: player.go(${dir})`);
 		switch (dir) {
 			case 'up':
 				if (!map.get(`${player.x}:${player.y - 1}`).isWall) {
@@ -388,41 +109,171 @@ let finish = {
 	},
 };
 
-// Генерирует карту. Версия генератора: v1
-function generateMap() {
-	let generationTimer = setTimeout(function() {
-		throw timeoutError;
-	}, 5000);
-	for (let i of map.keys()) {
-		map.get(i).isGenerated = false;
+// Генерирует специальные области карты
+function placeBlock(x, y, type) {
+	switch (type) {
+		case 'start00': 
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			break;
+		case 'start01':
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x + 1}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			break;
+		case 'start01':
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y + 1}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			break;
+		case 'finish00':
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			break;
+		case 'finish01':
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x + 1}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			break;
+		case 'finish01':
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y + 1}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			break;
 	}
+}
 
-	for (let y = -1; y < mapHeight + 1; y++) {
+// Генерирует карту. Версия генератора: v2.2
+function generateMap() {
+	let mask;
+	for (let y = 1; y < mapHeight; y += 3) {
+		for (let x = 1; x < mapWidth; x += 3) {
+			if (debug) {
+				writeToLog(`x == ${x}\ny == ${y}`);
+			}
+			mask = 'XXXX';
+			if (debug) {
+				writeToLog(`mask == ${mask}`);
+			}
+			if (map.get(`${x + 1}:${y - 1}`).isGenerated) {
+				if (map.get(`${x + 1}:${y - 1}`).isWall) {
+					mask = '1' + mask.slice(1);
+				} else {
+					mask = '0' + mask.slice(1);
+				}
+			}
+			if (map.get(`${x + 3}:${y + 1}`).isGenerated) {
+				if (map.get(`${x + 3}:${y + 1}`).isWall) {
+					mask = mask[0] + '1' + mask.slice(2);
+				} else {
+					mask = mask[0] + '0' + mask.slice(2);
+				}
+			}
+			if (map.get(`${x + 1}:${y + 3}`).isGenerated) {
+				if (map.get(`${x + 1}:${y + 3}`).isWall) {
+					mask = mask.slice(0, 3) + '1' + mask[3];
+				} else {
+					mask = mask.slice(0, 3) + '0' + mask[3];
+				}
+			}
+			if (map.get(`${x - 1}:${y + 1}`).isGenerated) {
+				if (map.get(`${x - 1}:${y + 1}`).isWall) {
+					mask = mask.slice(0, 4) + '1';
+				} else {
+					mask = mask.slice(0, 4) + '0';
+				}
+			}
+			let blockId = '';
+			for (let i = 0; i < 4; i++) {
+				if (mask[i] == 'X') {
+					blockId += Math.floor(Math.random() * 2);
+				} else {
+					blockId += mask[i];
+				}
+			}
+			if (debug) {
+				writeToLog(`blockId == ${blockId}`);
+			}
+			for (let y1 = y; y1 <= y + 2; y1++) {
+				for (let x1 = x; x1 <= x + 2; x1++) {
+					map.get(`${x}:${y}`).isGenerated = true;
+				}
+			}
+			map.get(`${x}:${y}`).isWall = true;
+			map.get(`${x + 2}:${y}`).isWall = true;
+			map.get(`${x}:${y + 2}`).isWall = true;
+			map.get(`${x + 2}:${y + 2}`).isWall = true;
+			if (blockId == '1111') {
+				map.get(`${x + 1}:${y + 1}`).isWall = true;
+			}
+			// Комменты - костыли, не дергать
+			if (blockId[0] == '1') {
+				//map.get(`${x + 1}:${y}`).isWall = true;
+			}
+			if (blockId[1] == '1') {
+				//map.get(`${x + 2}:${y + 1}`).isWall = true;
+			}
+			if (blockId[2] == '1') {
+				map.get(`${x + 1}:${y + 2}`).isWall = true;
+			}
+			if (blockId[3] == '1') {
+				//map.get(`${x}:${y + 1}`).isWall = true;
+			}
+		}
+	}
+	for (let y = -1; y <= mapHeight + 1; y++) {
 		map.get(`-1:${y}`).isWall = true;
 		map.get(`0:${y}`).isWall = true;
 		map.get(`${mapWidth - 1}:${y}`).isWall = true;
 		map.get(`${mapWidth}:${y}`).isWall = true;
 	}
-	for (let x = -1; x < mapWidth + 1; x++) {
+	for (let x = -1; x <= mapWidth + 1; x++) {
 		map.get(`${x}:-1`).isWall = true;
 		map.get(`${x}:0`).isWall = true;
 		map.get(`${x}:${mapHeight - 1}`).isWall = true;
 		map.get(`${x}:${mapHeight}`).isWall = true;
 	}
-
-	while (generators.length > 0) {
-		for (let i = 0; i < generators.length; i++) {
-			if (debug) {
-				alert('...');
-			}
-			executeGenerator(i);
-		}
-		writeToLog(`Generators have been updated, ${generators.length} are alive`);
+	let random = Math.floor(Math.random() * 3);
+	switch (random) {
+		case 0:
+			placeBlock(0, 0, 'start00');
+			break;
+		case 1:
+			placeBlock(0, 0, 'start01');
+			break;
+		case 2:
+			placeBlock(0, 0, 'start10');
+			break;
 	}
-
-	finish.setFinish();
-	player.timePoints = 100;
-	clearTimeout(generationTimer);
+	random = Math.floor(Math.random() * 3);
+	switch (random) {
+		case 0:
+			placeBlock(mapWidth - 3, mapHeight - 3, 'finish00');
+			break;
+		case 0:
+			placeBlock(mapWidth - 3, mapHeight - 3, 'finish01');
+			break;
+		case 0:
+			placeBlock(mapWidth - 3, mapHeight - 3, 'finish10');
+			break;
+	}
+	finish.x = mapWidth - 2;
+	finish.y = mapHeight - 2;
+	map.set(`${finish.x}:${finish.y}`, {isGenerated: true, isWall: false});
+	map.set(`${finish.x - 1}:${finish.y}`, {isGenerated: true, isWall: false});
+	map.set(`${finish.x - 1}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+	map.set(`${finish.x}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+	map.set(`${player.x}:${player.y}`, {isGenerated: true, isWall: false});
+	map.set(`${player.x}:${player.y + 1}`, {isGenerated: true, isWall: false});
+	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, isWall: false});
+	map.set(`${player.x + 1}:${player.y}`, {isGenerated: true, isWall: false});
+	redraw();
 }
 
 // Включает/выключает кнопки управления в за-
@@ -454,6 +305,7 @@ function changeButtonsAvaliablity() {
 }
 
 function redraw() {
+	clearScreen();
 	for (let y = 0; y < mapHeight; y++) {
 		for (let x = 0; x < mapWidth; x++) {
 			if (map.get(`${x}:${y}`).isWall) {
@@ -465,22 +317,9 @@ function redraw() {
 	drawing.putPixel(finish.x, finish.y, 'yellow');
 }
 
-function fastRedraw() {
-	for (let y = player.y - 1; y <= player.y + 1; y++) {
-		for (let x = player.x - 1; x <= player.x + 1; x++) {
-			if (map.get(`${x}:${y}`).isWall) {
-				drawing.putPixel(x, y, 'black');
-			} else {
-				drawing.putPixel(x, y, 'white');
-			}
-		}
-	}
-	drawing.putPixel(player.x, player.y, 'green');
-	drawing.putPixel(finish.x, finish.y, 'yellow');
-}
-
 function clearScreen() {
-	drawing.fillRectByAngle(0, 0, mapWidth, mapHeight);
+	context.fillStyle = 'white';
+	context.fillRect(0, 0, mapWidth * box, mapHeight* box);
 }
 
 // Обработчик нажатий на кнопки
@@ -488,33 +327,26 @@ function onClick(id) {
 	writeToLog(`Clicked on ${id}`);
 	switch (id) {
 		case 'up':
-			writeToLog('player.go(\'up\')');
 			player.go('up');
 			break;
 		case 'right':
-			writeToLog('player.go(\'right\')');
 			player.go('right');
 			break;
 		case 'down':
-			writeToLog('player.go(\'down\')');
 			player.go('down');
 			break;
 		case 'left':
-			writeToLog('player.go(\'left\')');
 			player.go('left');
 			break;
 	}
 	if (player.isFinished) {
 		player.points += player.timePoints;
-		//generateMap();
-		//player.x = 1;
-		//player.y = 1;
 		redraw();
 	} else {
-		fastRedraw();
+		redraw();
 	}
 }
 
 defineMapContent();
-//generateMap();
+generateMap();
 redraw();
