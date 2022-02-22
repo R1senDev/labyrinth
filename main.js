@@ -1,4 +1,5 @@
-// Настройка холста
+// Настройка холста и сопутствующих объектов
+const score = document.getElementById('score');
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
 // Настройка кнопок управления
@@ -7,7 +8,7 @@ const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
 // Прочие настройки. Балуйся.
-let debug = true;
+let debug = false;
 let box = 5;
 let mapWidth = 69;  // Молчите, пожалуйста. Это оп-
 let mapHeight = 69; // тимальное значение ._.
@@ -50,12 +51,7 @@ let player = {
 	y: 1,
 	points: 0,
 	timePoints: 100,
-	// Каждую секунду уменьшает timePoints на 1
-	timePointsDescreaser: setInterval(function() {
-		if (player.timePoints <= 10) {
-			timePoints--;
-		}
-	}, 1000),
+	level: 0,
 	isFinished: function() {
 		//writeToLog(`(finish.x == player.x) && (finish.y == player.y) == ${(finish.x == player.x) && (finish.y == player.y)}`)
 		if ((finish.x == player.x) && (finish.y == player.y)) {
@@ -149,18 +145,19 @@ function placeBlock(x, y, type) {
 	}
 }
 
-// Генерирует карту. Версия генератора: v2.2
+// Генерирует карту. Версия генератора: v2.3
 function generateMap() {
+	player.level++;
+	player.timePoints = 100;
+	player.x = 1;
+	player.y = 1;
+	defineMapContent();
 	let mask;
 	for (let y = 1; y < mapHeight; y += 3) {
 		for (let x = 1; x < mapWidth; x += 3) {
-			if (debug) {
-				writeToLog(`x == ${x}\ny == ${y}`);
-			}
+			writeToLog(`x == ${x}\ny == ${y}`);
 			mask = 'XXXX';
-			if (debug) {
-				writeToLog(`mask == ${mask}`);
-			}
+			writeToLog(`mask == ${mask}`);
 			if (map.get(`${x + 1}:${y - 1}`).isGenerated) {
 				if (map.get(`${x + 1}:${y - 1}`).isWall) {
 					mask = '1' + mask.slice(1);
@@ -263,6 +260,22 @@ function generateMap() {
 			placeBlock(mapWidth - 3, mapHeight - 3, 'finish10');
 			break;
 	}
+
+	for (let x = 1; x < mapWidth; x++) {
+		map.set(`${x}:2`, {isGenerated: true, isWall: false});
+		map.set(`${x}:${mapHeight - 3}`, {isGenerated: true, isWall: false});
+	}
+	for (let y = 0; y <= mapHeight; y++) {
+		map.set(`${mapWidth - 1}:${y}`, {isGenerated: true, isWall: true});
+	}
+	for (let x = 1; x < mapWidth; x++) {
+		if (x % 3 == 0) {
+			map.set(`${x}:${mapWidth - 3}`, {isGenerated: true, isWall: 	false});
+		} else {
+			map.set(`${x}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
+		}
+	}
+
 	finish.x = mapWidth - 2;
 	finish.y = mapHeight - 2;
 	map.set(`${finish.x}:${finish.y}`, {isGenerated: true, isWall: false});
@@ -273,7 +286,9 @@ function generateMap() {
 	map.set(`${player.x}:${player.y + 1}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x + 1}:${player.y}`, {isGenerated: true, isWall: false});
+	map.set(`${mapWidth - 4}:${mapHeight - 6}`, {isGenerated: true, isWall: false});
 	redraw();
+	changeButtonsAvaliablity();
 }
 
 // Включает/выключает кнопки управления в за-
@@ -300,11 +315,13 @@ function changeButtonsAvaliablity() {
 	if (map.get(`${player.x - 1}:${player.y}`).isWall) {
 		left.disabled = true;
 	} else {
-		leteft.disabled = false;
+		left.disabled = false;
 	}
 }
 
 function redraw() {
+	score.value = `Score: ${player.points} (+${player.timePoints}), completed ${player.level - 1} levels`;
+
 	clearScreen();
 	for (let y = 0; y < mapHeight; y++) {
 		for (let x = 0; x < mapWidth; x++) {
@@ -339,14 +356,43 @@ function onClick(id) {
 			player.go('left');
 			break;
 	}
-	if (player.isFinished) {
+	if ((player.y == finish.y) && (player.x == finish.x)) {
 		player.points += player.timePoints;
+		console.log(`Points: ${player.points}`);
+		generateMap();
 		redraw();
 	} else {
 		redraw();
 	}
+	changeButtonsAvaliablity();
 }
 
-defineMapContent();
+function onKeyPress(key) {
+	switch (key) {
+		case 87:
+			onClick('up');
+			break;
+		case 65:
+			onClick('left');
+			break;
+		case 83:
+			onClick('down');
+			break;
+		case 68:
+			onClick('right');
+			break;
+	}
+}
+
+document.addEventListener('keydown', function(event) {
+	onKeyPress(event.keyCode);
+});
+
+let timePointsDescreaser = setInterval(function() {
+	if (player.timePoints > 10) {
+		player.timePoints--;
+		redraw();
+	}
+}, 1000);
 generateMap();
 redraw();
