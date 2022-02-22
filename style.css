@@ -4,6 +4,13 @@
 	text-align: center;
 }
 
+#score {
+	margin: 5px;
+	border: 0;
+	width: 95%;
+	background-color: rgba(0, 0, 0, 0);
+}
+
 button {
 	font-size: 50px;
 }
