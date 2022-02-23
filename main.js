@@ -7,6 +7,8 @@ const up = document.getElementById('up');
 const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
+// Массив с врагами
+let enemies = [];
 // Прочие настройки. Балуйся.
 let debug = false;
 let box = 5;
@@ -332,6 +334,9 @@ function redraw() {
 	}
 	drawing.putPixel(player.x, player.y, 'green');
 	drawing.putPixel(finish.x, finish.y, 'yellow');
+	for (let i = 0; i < enemies.length; i++) {
+		drawingputPixel(enemies[i].x, enemies[i].y, 'red');
+	}
 }
 
 function clearScreen() {
@@ -394,5 +399,58 @@ let timePointsDescreaser = setInterval(function() {
 		redraw();
 	}
 }, 1000);
+
+function spawnEnemies(num) {
+	for (let i = 0; i < num; i++) {
+		let rX = Math.random() * (mapWidth + 1);
+		let rY = Math.random() * (mapHeight + 1);
+		while (map.get(`${rX}:${rY}`).isWall) {
+			rX = Math.random() * (mapWidth + 1);
+			rY = Math.random() * (mapHeight + 1);
+		}
+		let axis = '';
+		if (map.get(`${rX}:${rY - 1}`).isWall) {
+			axis = 'horisontal';
+		} else {
+			axis = 'vertical';
+		}
+		enemies.push({x: rX, y: rY, axis: axis,
+			movementTimer: setInterval(function() {
+				if ((this.axis == 'horisontal') && (map.get(`${this.x - 1}:${this.y}`).isWall)) {
+					this.direction = 'right';
+				}
+				if ((this.axis == 'horisontal') && (map.get(`${this.x + 1}:${this.y}`).isWall)) {
+					this.direction = 'left';
+				}
+				if ((this.axis == 'vertical') && (map.get(`${this.x}:${this.y - 1}`).isWall)) {
+					this.direction = 'down';
+				}
+				if ((this.axis == 'vertical') && (map.get(`${this.x}:${this.y + 1}`).isWall)) {
+					this.direction = 'up';
+				}
+				switch (this.direction) {
+					case 'up':
+						this.y--;
+						break;
+					case 'right':
+						this.x++;
+						break;
+					case 'down':
+						this.y++;
+						break;
+					case 'left':
+						this.x--;
+						break;
+				}
+			}, 250);
+		});
+		Object.defineProperty(this, axis, {writable: false});
+	}
+	// Признаю ошибку: поздно допёр до мысли,
+	// что нужно было использовать функцию-
+	// конструктор для этой задачи :))
+}
+
+spawnEnemies(3);
 generateMap();
 redraw();
