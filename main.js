@@ -7,8 +7,8 @@ const up = document.getElementById('up');
 const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
-// Массив с врагами
-let enemies = [];
+// Массив с монетами
+let coins = [];
 // Прочие настройки. Балуйся.
 let debug = false;
 let box = 5;
@@ -45,6 +45,12 @@ function defineMapContent() {
 			map.set(`${x}:${y}`, {isWall: false, isGenerated: false});
 		}
 	}
+}
+
+function playSound(path) {
+	let sound = new Audio();
+	sound.src = path;
+	sound.autoplay = true;
 }
 
 // Игрок
@@ -86,6 +92,14 @@ let player = {
 					player.x--;
 				}
 				break;
+		}
+		for (let i = 0; i < coins.length; i++) {
+			if ((player.x == coins[i].x) && (player.y == coins[i].y)) {
+				coins[i].x = -1;
+				coins[i].y = -1;
+				player.points += 10;
+				playSound('coin.mp3');
+			}
 		}
 	},
 };
@@ -290,6 +304,22 @@ function generateMap() {
 	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x + 1}:${player.y}`, {isGenerated: true, isWall: false});
 	map.set(`${mapWidth - 4}:${mapHeight - 6}`, {isGenerated: true, isWall: false});
+	map.set(`${mapWidth - 4}:${mapHeight - 4}`, {isGenerated: true, isWall: false});
+
+	for (let i = 0; i < 10; i++) {
+		let rx, ry;
+		rx = Math.floor(Math.random() * mapWidth);
+		ry = Math.floor(Math.random() * mapHeight);
+		if (!map.get(`${rx}:${ry}`).isWall) {
+			coins[i] = {
+				x: rx,
+				y: ry,
+			};
+		} else {
+			i--;
+		}
+	}
+
 	redraw();
 	changeButtonsAvaliablity();
 }
@@ -335,8 +365,8 @@ function redraw() {
 	}
 	drawing.putPixel(player.x, player.y, 'green');
 	drawing.putPixel(finish.x, finish.y, 'yellow');
-	for (let i = 0; i < enemies.length; i++) {
-		drawing.putPixel(enemies[i].x, enemies[i].y, 'red');
+	for (let i = 0; i < coins.length; i++) {
+		drawing.putPixel(coins[i].x, coins[i].y, 'gold');
 	}
 }
 
