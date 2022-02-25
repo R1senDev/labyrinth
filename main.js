@@ -270,9 +270,9 @@ function generateMap() {
 	}
 	for (let x = 1; x < mapWidth; x++) {
 		if (x % 3 == 0) {
-			map.set(`${x}:${mapWidth - 3}`, {isGenerated: true, isWall: 	false});
+			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: false});
 		} else {
-			map.set(`${x}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
+			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
 		}
 	}
 
