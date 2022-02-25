@@ -138,7 +138,7 @@ function placeBlock(x, y, type) {
 			map.get(`${x + 1}:${y + 2}`).isWall = true;
 			map.get(`${x + 2}:${y + 2}`).isWall = true;
 			break;
-		case 'finish01':
+		case 'finish10':
 			map.get(`${x}:${y + 2}`).isWall = true;
 			map.get(`${x + 2}:${y + 1}`).isWall = true;
 			map.get(`${x + 2}:${y}`).isWall = true;
@@ -211,7 +211,9 @@ function generateMap() {
 			if (blockId == '1111') {
 				map.get(`${x + 1}:${y + 1}`).isWall = true;
 			}
-			// Комменты - костыли, не дергать
+			// Комменты - костыли, не дергать. Без
+			// этого - работает, но я не знаю, по-
+			// чему
 			if (blockId[0] == '1') {
 				//map.get(`${x + 1}:${y}`).isWall = true;
 			}
@@ -272,12 +274,11 @@ function generateMap() {
 	}
 	for (let x = 1; x < mapWidth; x++) {
 		if (x % 3 == 0) {
-			map.set(`${x}:${mapWidth - 3}`, {isGenerated: true, isWall: 	false});
+			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: false});
 		} else {
-			map.set(`${x}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
+			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
 		}
 	}
-
 	finish.x = mapWidth - 2;
 	finish.y = mapHeight - 2;
 	map.set(`${finish.x}:${finish.y}`, {isGenerated: true, isWall: false});
@@ -335,7 +336,7 @@ function redraw() {
 	drawing.putPixel(player.x, player.y, 'green');
 	drawing.putPixel(finish.x, finish.y, 'yellow');
 	for (let i = 0; i < enemies.length; i++) {
-		drawingputPixel(enemies[i].x, enemies[i].y, 'red');
+		drawing.putPixel(enemies[i].x, enemies[i].y, 'red');
 	}
 }
 
@@ -363,7 +364,6 @@ function onClick(id) {
 	}
 	if ((player.y == finish.y) && (player.x == finish.x)) {
 		player.points += player.timePoints;
-		console.log(`Points: ${player.points}`);
 		generateMap();
 		redraw();
 	} else {
@@ -400,57 +400,5 @@ let timePointsDescreaser = setInterval(function() {
 	}
 }, 1000);
 
-function spawnEnemies(num) {
-	for (let i = 0; i < num; i++) {
-		let rX = Math.random() * (mapWidth + 1);
-		let rY = Math.random() * (mapHeight + 1);
-		while (map.get(`${rX}:${rY}`).isWall) {
-			rX = Math.random() * (mapWidth + 1);
-			rY = Math.random() * (mapHeight + 1);
-		}
-		let axis = '';
-		if (map.get(`${rX}:${rY - 1}`).isWall) {
-			axis = 'horisontal';
-		} else {
-			axis = 'vertical';
-		}
-		enemies.push({x: rX, y: rY, axis: axis,
-			movementTimer: setInterval(function() {
-				if ((this.axis == 'horisontal') && (map.get(`${this.x - 1}:${this.y}`).isWall)) {
-					this.direction = 'right';
-				}
-				if ((this.axis == 'horisontal') && (map.get(`${this.x + 1}:${this.y}`).isWall)) {
-					this.direction = 'left';
-				}
-				if ((this.axis == 'vertical') && (map.get(`${this.x}:${this.y - 1}`).isWall)) {
-					this.direction = 'down';
-				}
-				if ((this.axis == 'vertical') && (map.get(`${this.x}:${this.y + 1}`).isWall)) {
-					this.direction = 'up';
-				}
-				switch (this.direction) {
-					case 'up':
-						this.y--;
-						break;
-					case 'right':
-						this.x++;
-						break;
-					case 'down':
-						this.y++;
-						break;
-					case 'left':
-						this.x--;
-						break;
-				}
-			}, 250);
-		});
-		Object.defineProperty(this, axis, {writable: false});
-	}
-	// Признаю ошибку: поздно допёр до мысли,
-	// что нужно было использовать функцию-
-	// конструктор для этой задачи :))
-}
-
-spawnEnemies(3);
 generateMap();
 redraw();
