@@ -6,6 +6,24 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+	<div class="overlay">
+		<div class="float-left">
+			<a href="" onclick="playSound('bg.mp3')">Music</a><br>
+			<input type="checkbox" id="sounds" checked>
+			<label for="sounds">Sounds</label><br>
+		</div>
+		<form class="float-right">
+			<!-- По default -->
+			<input type="radio" id="classic" name="gamemode" checked>
+			<label for="classic">Classic</label><br>
+			<!-- За 40 секунд -->
+			<input type="radio" id="timer" name="gamemode">
+			<label for="timer">With timer</label><br>
+			<!-- Бесконечный спавн монет -->
+			<input type="radio" id="zen" name="gamemode">
+			<label for="zen">Zen</label>
+		</form>
+	</div>
 	<input type="text" id="score" disabled><br>
 	<canvas id="canvas"></canvas><br>
 	<div class="buttons">
