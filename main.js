@@ -1,16 +1,21 @@
-// Настройка холста и сопутствующих объектов
+// Настройка холста и других объектов
 const score = document.getElementById('score');
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-// Настройка кнопок управления
 const up = document.getElementById('up');
 const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
+const music = document.getElementById('music');
+const sounds = document.getElementById('sounds');
 // Массив с монетами
 let coins = [];
 // Прочие настройки. Балуйся.
 let debug = false;
+// Поддерживаемые режимы игры:
+// - classic
+// - timer
+let gameMode = 'classic';
 let box = 5;
 let mapWidth = 69;  // Молчите, пожалуйста. Это оп-
 let mapHeight = 69; // тимальное значение ._.
@@ -48,7 +53,7 @@ function defineMapContent() {
 }
 
 function playSound(path) {
-	let sound = new Audio();
+	var sound = new Audio();
 	sound.src = path;
 	sound.autoplay = true;
 }
@@ -164,6 +169,9 @@ function placeBlock(x, y, type) {
 // Генерирует карту. Версия генератора: v2.3
 function generateMap() {
 	player.level++;
+	if (player.level > 1) {
+		playSound(`win${Math.floor(Math.random() * 2)}.mp3`);
+	}
 	player.timePoints = 100;
 	player.x = 1;
 	player.y = 1;
@@ -423,12 +431,22 @@ document.addEventListener('keydown', function(event) {
 	onKeyPress(event.keyCode);
 });
 
+function switchMusic() {
+	sound('bg.mp3', 'play');
+}
+
 let timePointsDescreaser = setInterval(function() {
 	if (player.timePoints > 10) {
 		player.timePoints--;
 		redraw();
 	}
 }, 1000);
+
+function onload() {
+
+}
+
+document.addEventListener('DOMContentLoaded', onload);
 
 generateMap();
 redraw();
