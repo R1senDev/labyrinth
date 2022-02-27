@@ -37,3 +37,18 @@ button {
 	text-align: left;
 	margin-left: 41%;
 }
+
+.overlay {
+	position: absolute;
+	width: 90%;
+	margin: 20px 0 0 5%;
+}
+
+.float-left {
+	float: left;
+}
+
+.float-right {
+	float: right;
+	text-align: left;
+}
