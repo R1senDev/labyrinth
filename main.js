@@ -15,6 +15,7 @@ let debug = false;
 // Поддерживаемые режимы игры:
 // - classic
 // - timer
+// - zen
 let gameMode = 'classic';
 let box = 5;
 let mapWidth = 69;  // Молчите, пожалуйста. Это оп-
@@ -33,12 +34,6 @@ let drawing = {
 	},
 };
 Object.freeze(drawing);
-
-function writeToLog(str) {
-	if (debug) {
-		console.log(str);
-	}
-}
 
 // Коллекция с картой
 let map = new Map();
@@ -66,7 +61,6 @@ let player = {
 	timePoints: 100,
 	level: 0,
 	isFinished: function() {
-		//writeToLog(`(finish.x == player.x) && (finish.y == player.y) == ${(finish.x == player.x) && (finish.y == player.y)}`)
 		if ((finish.x == player.x) && (finish.y == player.y)) {
 			return true;
 		} else {
@@ -74,11 +68,9 @@ let player = {
 		}
 	},
 	go: function(dir) {
-		//writeToLog(`In progress: player.go(${dir})`);
 		switch (dir) {
 			case 'up':
 				if (!map.get(`${player.x}:${player.y - 1}`).isWall) {
-					writeToLog('player.y--');
 					player.y--;
 				}
 				break;
@@ -179,9 +171,7 @@ function generateMap() {
 	let mask;
 	for (let y = 1; y < mapHeight; y += 3) {
 		for (let x = 1; x < mapWidth; x += 3) {
-			writeToLog(`x == ${x}\ny == ${y}`);
 			mask = 'XXXX';
-			writeToLog(`mask == ${mask}`);
 			if (map.get(`${x + 1}:${y - 1}`).isGenerated) {
 				if (map.get(`${x + 1}:${y - 1}`).isWall) {
 					mask = '1' + mask.slice(1);
@@ -217,9 +207,6 @@ function generateMap() {
 				} else {
 					blockId += mask[i];
 				}
-			}
-			if (debug) {
-				writeToLog(`blockId == ${blockId}`);
 			}
 			for (let y1 = y; y1 <= y + 2; y1++) {
 				for (let x1 = x; x1 <= x + 2; x1++) {
@@ -301,12 +288,14 @@ function generateMap() {
 			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
 		}
 	}
-	finish.x = mapWidth - 2;
-	finish.y = mapHeight - 2;
-	map.set(`${finish.x}:${finish.y}`, {isGenerated: true, isWall: false});
-	map.set(`${finish.x - 1}:${finish.y}`, {isGenerated: true, isWall: false});
-	map.set(`${finish.x - 1}:${finish.y - 1}`, {isGenerated: true, isWall: false});
-	map.set(`${finish.x}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+	if (gameMode != 'zen') {
+		finish.x = mapWidth - 2;
+		finish.y = mapHeight - 2;
+		map.set(`${finish.x}:${finish.y}`, {isGenerated: true, isWall: false});
+		map.set(`${finish.x - 1}:${finish.y}`, {isGenerated: true, isWall: false});
+		map.set(`${finish.x - 1}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+		map.set(`${finish.x}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+	}
 	map.set(`${player.x}:${player.y}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x}:${player.y + 1}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, isWall: false});
@@ -326,6 +315,24 @@ function generateMap() {
 		} else {
 			i--;
 		}
+	}
+
+	switch (gameMode) {
+		case 'timer':
+			delete timerInterval;
+			var timerInterval = setInterval(function() {
+				if (player.timer > 0) {
+					player.timer--;
+					if (player.timer <= 10) {
+						playSound('pong.mp3');
+					}
+				} else {
+					player.level--;
+					playSound('fail.mp3');
+					generateMap();
+				}
+			}, 1000);
+			break;
 	}
 
 	redraw();
@@ -361,7 +368,17 @@ function changeButtonsAvaliablity() {
 }
 
 function redraw() {
-	score.value = `Score: ${player.points} (+${player.timePoints}), completed ${player.level - 1} levels`;
+	switch (gameMode) {
+		case 'classic':
+			score.value = `Score: ${player.points} (+${player.timePoints}), completed ${player.level - 1} level(s)`;
+			break;
+		case 'timer':
+			score.value = `Score: ${player.points} (${player?.timer}s left), completed ${player.level - 1} level(s)`;
+			break;
+		case 'zen':
+			score.value = `Collected ${player.points / 10} coin(s)`;
+			break;
+	}
 
 	clearScreen();
 	for (let y = 0; y < mapHeight; y++) {
@@ -385,7 +402,6 @@ function clearScreen() {
 
 // Обработчик нажатий на кнопки
 function onClick(id) {
-	writeToLog(`Clicked on ${id}`);
 	switch (id) {
 		case 'up':
 			player.go('up');
@@ -447,6 +463,41 @@ function onload() {
 }
 
 document.addEventListener('DOMContentLoaded', onload);
+
+function changeGameMode(to) {
+	if ((player.points == 0) || (confirm('Are you sure you want to change the game mode? The score will be reset and the map will be regenerated.'))) {
+		player.level = 0;
+		switch (to) {
+			case 'classic':
+				gameMode = 'classic';
+				player.points = 0;
+				generateMap();
+				break;
+			case 'timer':
+				gameMode = 'timer';
+				player.points = 0;
+				generateMap();
+				break;
+			case 'zen':
+				gameMode = 'zen';
+				player.points = 0;
+				generateMap();
+				break;
+		}
+	} else {
+		switch (gameMode) {
+			case 'classic':
+				document.getElementById('classic').checked = true;
+				break;
+			case 'timer':
+				document.getElementById('timer').checked = true;
+				break;
+			case 'zen':
+				document.getElementById('zen').checked = true;
+				break;
+		}
+	}
+}
 
 generateMap();
 redraw();
