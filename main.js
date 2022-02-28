@@ -6,22 +6,25 @@ const up = document.getElementById('up');
 const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
-const music = document.getElementById('music');
 const sounds = document.getElementById('sounds');
 // Массив с монетами
 let coins = [];
+// Массив с парами порталов
+let portalPairs = [];
+// Массив с катапультами
+let catapult = [];
 // Прочие настройки. Балуйся.
 let debug = false;
-// Поддерживаемые режимы игры:
-// - classic
-// - timer
-// - zen
 let gameMode = 'classic';
+let portalPairsCount = 1;
+let catapultCount = 2;
 let box = 5;
-let mapWidth = 69;  // Молчите, пожалуйста. Это оп-
-let mapHeight = 69; // тимальное значение ._.
+let mapWidth = 69;
+let mapHeight = 69;
 canvas.width = mapWidth * box;
 canvas.height = mapHeight * box;
+// Другое, ни на что не влияет
+let highlighting = false;
 
 let drawing = {
 	putPixel: function(x, y, color) {
@@ -38,6 +41,132 @@ Object.freeze(drawing);
 // Коллекция с картой
 let map = new Map();
 
+function isFree(x, y) {
+	for (let i of coins) {
+		if ((i.x == x) && (i.y == y)) {
+			return false;
+		}
+	}
+	for (let i of portalPairs) {
+		if (((i.x1 == x) && (i.y1 == y)) || ((i.x2 == x) && (i.y2 == y))) {
+			return false;
+		}
+	}
+	for (let i of catapult) {
+		if ((i.x == x) && (i.y == y)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function disableAllButtons() {
+	up.disabled = true;
+	right.disabled = true;
+	down.disabled = true;
+	left.disabled = true;
+}
+
+// Функция-конструктор пары порталов
+function PortalPair() {
+	let x = 0;
+	let y = 0;
+	while ((map.get(`${x}:${y}`).isWall) || (!isFree(x, y))) {
+		x = Math.floor(Math.random() * mapWidth);
+		y = Math.floor(Math.random() * mapHeight);		
+	}
+	this.x1 = x;
+	this.y1 = y;
+	map.set(`${x}:${y - 1}`, {isWall: false, isGenerated: true});
+	map.set(`${x + 1}:${y}`, {isWall: false, isGenerated: true});
+	map.set(`${x}:${y + 1}`, {isWall: false, isGenerated: true});
+	map.set(`${x - 1}:${y}`, {isWall: false, isGenerated: true});
+
+	x = 0;
+	y = 0;
+	while ((map.get(`${x}:${y}`).isWall) || (!isFree(x, y))) {
+		x = Math.floor(Math.random() * mapWidth);
+		y = Math.floor(Math.random() * mapHeight);		
+	}
+	this.x2 = x;
+	this.y2 = y;
+	map.set(`${x}:${y - 1}`, {isWall: false, isGenerated: true});
+	map.set(`${x + 1}:${y}`, {isWall: false, isGenerated: true});
+	map.set(`${x}:${y + 1}`, {isWall: false, isGenerated: true});
+	map.set(`${x - 1}:${y}`, {isWall: false, isGenerated: true});
+}
+
+// Функция-конструктор катапульты
+function Catapult_() {
+	let x = 0;
+	let y = 0;
+	while ((map.get(`${x}:${y}`).isWall) || (!isFree(x, y))) {
+		x = Math.floor(Math.random() * mapWidth);
+		y = Math.floor(Math.random() * mapHeight);
+	}
+	this.x = x;
+	this.y = y;
+	x = Math.floor(Math.random() * 4);
+	switch (x) {
+		case 0:
+			this.activate = function() {
+				let catapultInterval = setInterval(function() {
+					if (!map.get(`${player.x}:${player.y - 1}`).isWall) {
+						player.go('up');
+						disableAllButtons();
+					} else {
+						clearInterval(catapultInterval);
+						changeButtonsAvaliablity();
+					}
+					redraw();
+				}, 100);
+			}
+			break;
+		case 1:
+			this.activate = function() {
+				let catapultInterval = setInterval(function() {
+					if (!map.get(`${player.x + 1}:${player.y}`).isWall) {
+						player.go('right');
+						disableAllButtons();
+					} else {
+						clearInterval(catapultInterval);
+						changeButtonsAvaliablity();
+					}
+					redraw();
+				}, 100);
+			}
+			break;
+		case 2:
+			this.activate = function() {
+				let catapultInterval = setInterval(function() {
+					if (!map.get(`${player.x}:${player.y + 1}`).isWall) {
+						player.go('down');
+						disableAllButtons();
+					} else {
+						clearInterval(catapultInterval);
+						changeButtonsAvaliablity();
+					}
+					redraw();
+				}, 100);
+			}
+			break;
+		case 3:
+			this.activate = function() {
+				let catapultInterval = setInterval(function() {
+					if (!map.get(`${player.x - 1}:${player.y}`).isWall) {
+						player.go('left');
+						disableAllButtons();
+					} else {
+						clearInterval(catapultInterval);
+						changeButtonsAvaliablity();
+					}
+					redraw();
+				}, 100);
+			}
+			break;
+	}
+}
+
 // Определение содержимого карты
 function defineMapContent() {
 	for (let y = -2; y <= mapHeight + 2; y++) {
@@ -49,7 +178,7 @@ function defineMapContent() {
 
 function playSound(path) {
 	var sound = new Audio();
-	sound.src = path;
+	sound.src = `resources/${path}`;
 	sound.autoplay = true;
 }
 
@@ -66,6 +195,9 @@ let player = {
 		} else {
 			return false;
 		}
+	},
+	get pos() {
+		return `${player.x}:${player.y}`;
 	},
 	go: function(dir) {
 		switch (dir) {
@@ -96,6 +228,27 @@ let player = {
 				coins[i].y = -1;
 				player.points += 10;
 				playSound('coin.mp3');
+			}
+		}
+		for (let i of portalPairs) {
+			if ((player.x == i.x1) && (player.y == i.y1)) {
+				player.x = i.x2;
+				player.y = i.y2;
+				player.go(dir);
+				playSound('portal.mp3');
+			} else {
+				if ((player.x == i.x2) && (player.y == i.y2)) {
+					player.x = i.x1;
+					player.y = i.y1;
+					player.go(dir);
+					playSound('portal.mp3');
+				}
+			}
+		}
+		for (let i of catapult) {
+			if ((player.x == i.x) && (player.y == i.y)) {
+				i.activate();
+				playSound('catapult.mp3');
 			}
 		}
 	},
@@ -162,7 +315,7 @@ function placeBlock(x, y, type) {
 function generateMap() {
 	player.level++;
 	if (player.level > 1) {
-		playSound(`win${Math.floor(Math.random() * 2)}.mp3`);
+		playSound(`win.mp3`);
 	}
 	player.timePoints = 100;
 	player.x = 1;
@@ -221,7 +374,7 @@ function generateMap() {
 				map.get(`${x + 1}:${y + 1}`).isWall = true;
 			}
 			// Комменты - костыли, не дергать. Без
-			// этого - работает, но я не знаю, по-
+			// них всё работает, но я не знаю, по-
 			// чему
 			if (blockId[0] == '1') {
 				//map.get(`${x + 1}:${y}`).isWall = true;
@@ -307,7 +460,7 @@ function generateMap() {
 		let rx, ry;
 		rx = Math.floor(Math.random() * mapWidth);
 		ry = Math.floor(Math.random() * mapHeight);
-		if (!map.get(`${rx}:${ry}`).isWall) {
+		if ((!map.get(`${rx}:${ry}`).isWall) && (isFree(rx, ry))) {
 			coins[i] = {
 				x: rx,
 				y: ry,
@@ -333,6 +486,13 @@ function generateMap() {
 				}
 			}, 1000);
 			break;
+	}
+
+	for (let i = 0; i <= portalPairsCount; i++) {
+		portalPairs[i] = new PortalPair();
+	}
+	for (let i = 0; i <= catapultCount; i++) {
+		catapult[i] = new Catapult_();
 	}
 
 	redraw();
@@ -388,10 +548,25 @@ function redraw() {
 			}
 		}
 	}
-	drawing.putPixel(player.x, player.y, 'green');
-	drawing.putPixel(finish.x, finish.y, 'yellow');
-	for (let i = 0; i < coins.length; i++) {
-		drawing.putPixel(coins[i].x, coins[i].y, 'gold');
+	drawing.putPixel(finish.x, finish.y, 'cyan');
+	for (let i of coins) {
+		drawing.putPixel(i.x, i.y, 'gold');
+	}
+	for (let i of portalPairs) {
+		drawing.putPixel(i.x1, i.y1, 'purple');
+		drawing.putPixel(i.x2, i.y2, 'purple');
+	}
+	for (let i of catapult) {
+		drawing.putPixel(i.x, i.y, 'blue');
+	}
+	if (highlighting) {
+		for (let y = player.y - 4; y <= player.y + 4; y++) {
+			for (let x = player.x - 4; x <= player.x + 4; x++) {
+				drawing.putPixel(x, y, 'green');
+			}
+		}
+	} else {
+		drawing.putPixel(player.x, player.y, 'green');
 	}
 }
 
@@ -429,16 +604,28 @@ function onClick(id) {
 function onKeyPress(key) {
 	switch (key) {
 		case 87:
-			onClick('up');
-			break;
-		case 65:
-			onClick('left');
-			break;
-		case 83:
-			onClick('down');
+			if (!up.disabled) {
+				onClick('up');
+			}
 			break;
 		case 68:
-			onClick('right');
+			if (!right.disabled) {
+				onClick('right');
+			}
+			break;
+		case 83:
+			if (!down.disabled) {
+				onClick('down');
+			}
+			break;
+		case 65:
+			if (!left.disabled) {
+				onClick('left');
+			}
+			break;
+		case 82:
+			highlighting = true;
+			redraw();
 			break;
 	}
 }
@@ -447,9 +634,12 @@ document.addEventListener('keydown', function(event) {
 	onKeyPress(event.keyCode);
 });
 
-function switchMusic() {
-	sound('bg.mp3', 'play');
-}
+document.addEventListener('keyup', function(event) {
+	if (event.keyCode == 82) {
+		highlighting = false;
+		redraw();
+	}
+});
 
 let timePointsDescreaser = setInterval(function() {
 	if (player.timePoints > 10) {
