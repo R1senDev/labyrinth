@@ -178,7 +178,7 @@ function defineMapContent() {
 
 function playSound(path) {
 	var sound = new Audio();
-	sound.src = `resources/${path}`;
+	sound.src = path;
 	sound.autoplay = true;
 }
 
