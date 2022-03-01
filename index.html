@@ -6,21 +6,40 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+	<div id="levelconstructor" hidden>
+		
+	</div>
 	<div class="overlay">
 		<div class="float-left">
 			<input type="checkbox" id="sounds" checked>
 			<label for="sounds">Sounds</label><br>
 		</div>
-		<form class="float-right">
+		<div class="float-right">
 			<input type="radio" id="classic" name="gamemode" onchange="changeGameMode('classic')" checked>
 			<label for="classic">Classic</label><br>
-			<!--
-			<input type="radio" id="timer" name="gamemode" onchange="changeGameMode('timer')">
-			<label for="timer">With timer</label><br>
+			<input type="radio" id="gravity" name="gamemode" onchange="changeGameMode('gravity')">
+			<label for="timer">Gravity</label><br>
 			<input type="radio" id="zen" name="gamemode" onchange="changeGameMode('zen')">
 			<label for="zen">Zen</label>
-			-->
-		</form>
+		</div>
+	</div>
+	<div class="overlay2">
+		<div class="float-left">
+			<input type="radio" id="keyboard" name="inputtype" onchange="document.getElementById('dpad').checked = true; document.getElementById('dpad').disabled = true; document.getElementById('facebuttons').disabled = true;" checked>
+			<label for="inputtype">Keyboard</label><br>
+			<input type="radio" id="gamepad" name="inputtype" onchange="document.getElementById('dpad').disabled = false; document.getElementById('facebuttons').disabled = false;">
+			<label for="gamepad">Gamepad <b>(&#946;)</b></label><br>
+			<input type="radio" id="dpad" name="gamepadtype" checked disabled>
+			<label for="dpad">D-pad</label><br>
+			<input type="radio" id="facebuttons" name="gamepadtype" disabled>
+			<label for="facebuttons">Face buttons</label><br>
+			<div class="controls-container">
+				<button class="controls" onclick="controlsHelp()">Controls hint</button>
+			</div>
+		</div>
+		<div class="float-right">
+			<button class="customlevel" onclick="openLevelConstructor()">Create a custom level</button>
+		</div>
 	</div>
 	<input type="text" id="score" disabled><br>
 	<canvas id="canvas"></canvas><br>
@@ -30,7 +49,6 @@
 		<button id="right" onclick="onClick('right')">&#8594;</button><br>
 		<button id="down" onclick="onClick('down')">&#8595;</button>
 	</div>
-	<button class="controls" onclick="alert('Controls:\n[W]/[A]/[S]/[D] - walking up/left/down/right;\n[R] (hold) - contrast lighting of the character')">Controls hint</button>
 
 	<script type="text/javascript" src="main.js"></script>
 </body>
