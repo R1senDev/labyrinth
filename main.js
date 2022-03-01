@@ -15,6 +15,7 @@ let portalPairs = [];
 let catapult = [];
 // Прочие настройки. Балуйся.
 let debug = false;
+let bugInfo = false;
 let gameMode = 'classic';
 let portalPairsCount = 1;
 let catapultCount = 2;
@@ -110,6 +111,9 @@ function Catapult_() {
 	switch (x) {
 		case 0:
 			this.activate = function() {
+				disableAllButtons();
+				player.y--;
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x}:${player.y - 1}`).isWall) {
 						player.go('up');
@@ -124,6 +128,9 @@ function Catapult_() {
 			break;
 		case 1:
 			this.activate = function() {
+				disableAllButtons();
+				player.x++;
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x + 1}:${player.y}`).isWall) {
 						player.go('right');
@@ -138,6 +145,9 @@ function Catapult_() {
 			break;
 		case 2:
 			this.activate = function() {
+				disableAllButtons();
+				player.x--;
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x}:${player.y + 1}`).isWall) {
 						player.go('down');
@@ -152,6 +162,9 @@ function Catapult_() {
 			break;
 		case 3:
 			this.activate = function() {
+				disableAllButtons();
+				player.x--;
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x - 1}:${player.y}`).isWall) {
 						player.go('left');
@@ -176,6 +189,7 @@ function defineMapContent() {
 	}
 }
 
+// Воспроизведение SFX
 function playSound(path) {
 	var sound = new Audio();
 	sound.src = path;
@@ -189,13 +203,7 @@ let player = {
 	points: 0,
 	timePoints: 100,
 	level: 0,
-	isFinished: function() {
-		if ((finish.x == player.x) && (finish.y == player.y)) {
-			return true;
-		} else {
-			return false;
-		}
-	},
+	// Для отладки
 	get pos() {
 		return `${player.x}:${player.y}`;
 	},
@@ -271,7 +279,7 @@ let finish = {
 	},
 };
 
-// Генерирует специальные области карты
+// Генерирует области карты
 function placeBlock(x, y, type) {
 	switch (type) {
 		case 'start00': 
@@ -311,7 +319,7 @@ function placeBlock(x, y, type) {
 	}
 }
 
-// Генерирует карту. Версия генератора: v2.3
+// Генерирует карту. Версия генератора: v2.4
 function generateMap() {
 	player.level++;
 	if (player.level > 1) {
@@ -441,6 +449,7 @@ function generateMap() {
 			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
 		}
 	}
+
 	if (gameMode != 'zen') {
 		finish.x = mapWidth - 2;
 		finish.y = mapHeight - 2;
@@ -448,7 +457,11 @@ function generateMap() {
 		map.set(`${finish.x - 1}:${finish.y}`, {isGenerated: true, isWall: false});
 		map.set(`${finish.x - 1}:${finish.y - 1}`, {isGenerated: true, isWall: false});
 		map.set(`${finish.x}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+	} else {
+		finish.x = -1;
+		finish.y = -1;
 	}
+
 	map.set(`${player.x}:${player.y}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x}:${player.y + 1}`, {isGenerated: true, isWall: false});
 	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, isWall: false});
@@ -470,29 +483,24 @@ function generateMap() {
 		}
 	}
 
-	switch (gameMode) {
-		case 'timer':
-			delete timerInterval;
-			var timerInterval = setInterval(function() {
-				if (player.timer > 0) {
-					player.timer--;
-					if (player.timer <= 10) {
-						playSound('pong.mp3');
-					}
-				} else {
-					player.level--;
-					playSound('fail.mp3');
-					generateMap();
-				}
-			}, 1000);
-			break;
-	}
-
 	for (let i = 0; i <= portalPairsCount; i++) {
 		portalPairs[i] = new PortalPair();
 	}
 	for (let i = 0; i <= catapultCount; i++) {
 		catapult[i] = new Catapult_();
+	}
+
+	for (let y = -1; y <= mapHeight + 1; y++) {
+		map.get(`-1:${y}`).isWall = true;
+		map.get(`0:${y}`).isWall = true;
+		map.get(`${mapWidth - 1}:${y}`).isWall = true;
+		map.get(`${mapWidth}:${y}`).isWall = true;
+	}
+	for (let x = -1; x <= mapWidth + 1; x++) {
+		map.get(`${x}:-1`).isWall = true;
+		map.get(`${x}:0`).isWall = true;
+		map.get(`${x}:${mapHeight - 1}`).isWall = true;
+		map.get(`${x}:${mapHeight}`).isWall = true;
 	}
 
 	redraw();
@@ -527,12 +535,14 @@ function changeButtonsAvaliablity() {
 	}
 }
 
+// Рендерит
+// .
 function redraw() {
 	switch (gameMode) {
 		case 'classic':
 			score.value = `Score: ${player.points} (+${player.timePoints}), completed ${player.level - 1} level(s)`;
 			break;
-		case 'timer':
+		case '':
 			score.value = `Score: ${player.points} (${player?.timer}s left), completed ${player.level - 1} level(s)`;
 			break;
 		case 'zen':
@@ -570,6 +580,7 @@ function redraw() {
 	}
 }
 
+// Очищает экран
 function clearScreen() {
 	context.fillStyle = 'white';
 	context.fillRect(0, 0, mapWidth * box, mapHeight* box);
@@ -598,42 +609,108 @@ function onClick(id) {
 	} else {
 		redraw();
 	}
+	if ((levelConstructorIsOpened) && (!bugInfo)) {
+		alert('The developer found this bug almost immediately after it appeared, but he is too lazy to fix it, so you just have to accept it as a feature.\nOr just close the unfinished level creation section and forget about this dialog window.')
+		bugInfo = true;
+	}
 	changeButtonsAvaliablity();
 }
 
+// Обработчик нажатий на клавиши
 function onKeyPress(key) {
-	switch (key) {
-		case 87:
-			if (!up.disabled) {
-				onClick('up');
+	if (document.getElementById('keyboard').checked) {
+		switch (key) {
+			case 87:
+				if (!up.disabled) {
+					onClick('up');
+				}
+				break;
+			case 68:
+				if (!right.disabled) {
+					onClick('right');
+				}
+				break;
+			case 83:
+				if (!down.disabled) {
+					onClick('down');
+				}
+				break;
+			case 65:
+				if (!left.disabled) {
+					onClick('left');
+				}
+				break;
+			case 82:
+				highlighting = true;
+				redraw();
+				break;
+		}
+	}
+
+	if (document.getElementById('gamepad').checked) {
+		if (document.getElementById('dpad').checked) {
+			switch (key) {
+				case 12:
+					if (!up.disabled) {
+						onClick('up');
+					}
+					break;
+				case 15:
+					if (!right.disabled) {
+						onClick('right');
+					}
+					break;
+				case 13:
+					if (!down.disabled) {
+						onClick('down');
+					}
+					break;
+				case 14:
+					if (!left.disabled) {
+						onClick('left');
+					}
+					break;
+				case 5:
+					highlighting = true;
+					redraw();
+					break;
 			}
-			break;
-		case 68:
-			if (!right.disabled) {
-				onClick('right');
+		}
+
+		if (document.getElementById('facebuttons').checked) {
+			switch (key) {
+				case 3:
+					if (!up.disabled) {
+						onClick('up');
+					}
+					break;
+				case 1:
+					if (!right.disabled) {
+						onClick('right');
+					}
+					break;
+				case 0:
+					if (!down.disabled) {
+						onClick('down');
+					}
+					break;
+				case 2:
+					if (!left.disabled) {
+						onClick('left');
+					}
+					break;
+				case 4:
+					highlighting = true;
+					redraw();
+					break;
 			}
-			break;
-		case 83:
-			if (!down.disabled) {
-				onClick('down');
-			}
-			break;
-		case 65:
-			if (!left.disabled) {
-				onClick('left');
-			}
-			break;
-		case 82:
-			highlighting = true;
-			redraw();
-			break;
+		}
 	}
 }
 
 document.addEventListener('keydown', function(event) {
 	onKeyPress(event.keyCode);
 });
-
 document.addEventListener('keyup', function(event) {
 	if (event.keyCode == 82) {
 		highlighting = false;
@@ -663,8 +740,8 @@ function changeGameMode(to) {
 				player.points = 0;
 				generateMap();
 				break;
-			case 'timer':
-				gameMode = 'timer';
+			case 'gravity':
+				gameMode = 'gravity';
 				player.points = 0;
 				generateMap();
 				break;
@@ -689,5 +766,39 @@ function changeGameMode(to) {
 	}
 }
 
+function controlsHelp() {
+	if (document.getElementById('keyboard').checked) {
+		alert('The keyboard control type is selected\nControls:\n[W]/[A]/[S]/[D] - walking up/left/down/right;\n[R] (hold) - contrast lighting of the character');
+	}
+	if (document.getElementById('gamepad').checked) {
+		if (document.getElementById('dpad').checked) {
+			alert('The control type is selected using the directional pad of the gamepad\nControls:\n D-pad (directional pad) - walking;\n[RB] (hold) - contrast lighting of the character');
+		}
+		if (document.getElementById('facebuttons').checked) {
+			alert('The control type is selected using the face buttons of the gamepad\nControls:\n[Y]/[B]/[A]/[X] - walking up/left/down/right;\n[LB] (hold) - contrast lighting of the character');
+		}
+	}
+}
+
+let levelConstructorIsOpened = false;
+function openLevelConstructor() {
+	if (!levelConstructorIsOpened) {
+		disableAllButtons();
+		document.getElementById('levelconstructor').hidden = false;
+		levelConstructorIsOpened = true;
+	} else {
+		changeButtonsAvaliablity();
+		document.getElementById('levelconstructor').hidden = true;
+		levelConstructorIsOpened = false;
+	}
+}
+
 generateMap();
+setInterval(function() {
+	if (gameMode == 'gravity') {
+		player.go('down');
+		changeButtonsAvaliablity();
+		redraw();
+	}
+}, 500);
 redraw();
