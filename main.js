@@ -13,12 +13,17 @@ let coins = [];
 let portalPairs = [];
 // Массив с катапультами
 let catapult = [];
+// Массив с бомбами
+let bombs = [];
+// Кол-во игровых объектов
+let coinsCount = 10;
+let portalPairsCount = 1;
+let catapultCount = 2;
+let bombsCount = 10;
 // Прочие настройки. Балуйся.
 let debug = false;
 let bugInfo = false;
 let gameMode = 'classic';
-let portalPairsCount = 1;
-let catapultCount = 2;
 let box = 5;
 let mapWidth = 69;
 let mapHeight = 69;
@@ -147,7 +152,6 @@ function Catapult_() {
 			this.activate = function() {
 				disableAllButtons();
 				player.x--;
-				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x}:${player.y + 1}`).isWall) {
 						player.go('down');
@@ -180,6 +184,58 @@ function Catapult_() {
 	}
 }
 
+// Не поверишь... функция-конструктор бомбы
+function Bomb() {
+	let x = 0;
+	let y = 0;
+	while ((map.get(`${x}:${y}`).isWall) || (!isFree(x, y))) {
+		x = Math.floor(Math.random() * mapWidth);
+		y = Math.floor(Math.random() * mapHeight);
+	}
+	this.x = x;
+	this.y = y;
+	delete x;
+	delete y;
+
+	this.activate = function() {
+		for (let y = this.y - 5; y <= this.y + 5; y++) {
+			map.set(`${this.x}:${y}`, {isWall: false, isGenerated: true});
+		}
+		for (let y = this.y - 4; y <= this.y + 4; y++) {
+			for (let x = this.x - 2; x <= this.x + 2; x++) {
+				map.set(`${x}:${y}`, {isWall: false, isGenerated: true});
+			}
+		}
+		for (let y = this.y - 3; y <= this.y + 3; y++) {
+			for (let x = this.x - 3; x <= this.x + 3; x++) {
+				map.set(`${x}:${y}`, {isWall: false, isGenerated: true});
+			}
+		}
+		for (let y = this.y - 2; y <= this.y + 2; y++) {
+			for (let x = this.x - 4; x <= this.x + 4; x++) {
+				map.set(`${x}:${y}`, {isWall: false, isGenerated: true});
+			}
+		}
+		for (let x = this.x - 5; x <= this.x + 5; x++) {
+			map.set(`${x}:${this.y}`, {isWall: false, isGenerated: true});
+		}
+		this.x = -1;
+		this.y = -1;
+		for (let y = -1; y <= mapHeight + 1; y++) {
+			map.get(`-1:${y}`).isWall = true;
+			map.get(`0:${y}`).isWall = true;
+			map.get(`${mapWidth - 1}:${y}`).isWall = true;
+			map.get(`${mapWidth}:${y}`).isWall = true;
+		}
+		for (let x = -1; x <= mapWidth + 1; x++) {
+			map.get(`${x}:-1`).isWall = true;
+			map.get(`${x}:0`).isWall = true;
+			map.get(`${x}:${mapHeight - 1}`).isWall = true;
+			map.get(`${x}:${mapHeight}`).isWall = true;
+		}
+	}
+}
+
 // Определение содержимого карты
 function defineMapContent() {
 	for (let y = -2; y <= mapHeight + 2; y++) {
@@ -191,9 +247,11 @@ function defineMapContent() {
 
 // Воспроизведение SFX
 function playSound(path) {
-	var sound = new Audio();
-	sound.src = path;
-	sound.autoplay = true;
+	if (sounds.checked) {
+		var sound = new Audio();
+		sound.src = path;
+		sound.autoplay = true;
+	}
 }
 
 // Игрок
@@ -257,6 +315,12 @@ let player = {
 			if ((player.x == i.x) && (player.y == i.y)) {
 				i.activate();
 				playSound('catapult.mp3');
+			}
+		}
+		for (let i of bombs) {
+			if ((player.x == i.x) && (player.y == i.y)) {
+				i.activate();
+				playSound('bomb.mp3');
 			}
 		}
 	},
@@ -469,7 +533,7 @@ function generateMap() {
 	map.set(`${mapWidth - 4}:${mapHeight - 6}`, {isGenerated: true, isWall: false});
 	map.set(`${mapWidth - 4}:${mapHeight - 4}`, {isGenerated: true, isWall: false});
 
-	for (let i = 0; i < 10; i++) {
+	for (let i = 0; i < coinsCount; i++) {
 		let rx, ry;
 		rx = Math.floor(Math.random() * mapWidth);
 		ry = Math.floor(Math.random() * mapHeight);
@@ -488,6 +552,9 @@ function generateMap() {
 	}
 	for (let i = 0; i <= catapultCount; i++) {
 		catapult[i] = new Catapult_();
+	}
+	for (let i = 0; i <= bombsCount; i++) {
+		bombs[i] = new Bomb();
 	}
 
 	for (let y = -1; y <= mapHeight + 1; y++) {
@@ -568,6 +635,9 @@ function redraw() {
 	}
 	for (let i of catapult) {
 		drawing.putPixel(i.x, i.y, 'blue');
+	}
+	for (let i of bombs) {
+		drawing.putPixel(i.x, i.y, 'red');
 	}
 	if (highlighting) {
 		for (let y = player.y - 4; y <= player.y + 4; y++) {
@@ -790,6 +860,12 @@ function openLevelConstructor() {
 		changeButtonsAvaliablity();
 		document.getElementById('levelconstructor').hidden = true;
 		levelConstructorIsOpened = false;
+	}
+}
+
+function switchTheme() {
+	if (document.getElementById('darktheme').checked) {
+		theme = 'dark';
 	}
 }
 
