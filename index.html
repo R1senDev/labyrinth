@@ -6,15 +6,26 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-	<div id="levelconstructor" hidden>
-		
+	<div id="levelconstructor-overlay" hidden>
+		<div id="levelconstructor">
+			<button class="x" onclick="openLevelConstructor()">X</button>
+			<h2>Number of coins: </h2>
+			<input type="number" id="coins" min="0" value="10"><br>
+			<h2>Number of portal pairs: </h2>
+			<input type="number" id="portalpairs" min="0" value="1"><br>
+			<h2>Number of catapults: </h2>
+			<input type="number" id="catapults" min="0" value="2"><br>
+			<h2>Number of bombs: </h2>
+			<input type="number" id="bombs" min="0" value="10"><br>
+			<h2>Probability of destruction by bombs of cells: </h2>
+			<input type="number" id="destroyingchance" max="100" min="0" value="50">
+		</div>
 	</div>
 	<div class="overlay">
 		<div class="float-left">
 			<input type="checkbox" id="darktheme">
 			<label for="darktheme" onchange="switchTheme()">Dark theme</label><br>
-			<input type="checkbox" id="sounds" c
-			hecked>
+			<input type="checkbox" id="sounds" checked>
 			<label for="sounds">Sounds</label><br>
 		</div>
 		<div class="float-right">

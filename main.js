@@ -21,9 +21,9 @@ let portalPairsCount = 1;
 let catapultCount = 2;
 let bombsCount = 10;
 // Прочие настройки. Балуйся.
-let debug = false;
 let bugInfo = false;
 let gameMode = 'classic';
+let bombDestroyingChance = 50;
 let box = 5;
 let mapWidth = 69;
 let mapHeight = 69;
@@ -83,10 +83,10 @@ function PortalPair() {
 	}
 	this.x1 = x;
 	this.y1 = y;
-	map.set(`${x}:${y - 1}`, {isWall: false, isGenerated: true});
-	map.set(`${x + 1}:${y}`, {isWall: false, isGenerated: true});
-	map.set(`${x}:${y + 1}`, {isWall: false, isGenerated: true});
-	map.set(`${x - 1}:${y}`, {isWall: false, isGenerated: true});
+	map.set(`${x}:${y - 1}`, {isWall: false, isGenerated: true, color: 'black'});
+	map.set(`${x + 1}:${y}`, {isWall: false, isGenerated: true, color: 'black'});
+	map.set(`${x}:${y + 1}`, {isWall: false, isGenerated: true, color: 'black'});
+	map.set(`${x - 1}:${y}`, {isWall: false, isGenerated: true, color: 'black'});
 
 	x = 0;
 	y = 0;
@@ -96,10 +96,10 @@ function PortalPair() {
 	}
 	this.x2 = x;
 	this.y2 = y;
-	map.set(`${x}:${y - 1}`, {isWall: false, isGenerated: true});
-	map.set(`${x + 1}:${y}`, {isWall: false, isGenerated: true});
-	map.set(`${x}:${y + 1}`, {isWall: false, isGenerated: true});
-	map.set(`${x - 1}:${y}`, {isWall: false, isGenerated: true});
+	map.set(`${x}:${y - 1}`, {isWall: false, isGenerated: true, color: 'black'});
+	map.set(`${x + 1}:${y}`, {isWall: false, isGenerated: true, color: 'black'});
+	map.set(`${x}:${y + 1}`, {isWall: false, isGenerated: true, color: 'black'});
+	map.set(`${x - 1}:${y}`, {isWall: false, isGenerated: true, color: 'black'});
 }
 
 // Функция-конструктор катапульты
@@ -118,7 +118,7 @@ function Catapult_() {
 			this.activate = function() {
 				disableAllButtons();
 				player.y--;
-				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true, color: 'black'});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x}:${player.y - 1}`).isWall) {
 						player.go('up');
@@ -135,7 +135,7 @@ function Catapult_() {
 			this.activate = function() {
 				disableAllButtons();
 				player.x++;
-				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true, color: 'black'});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x + 1}:${player.y}`).isWall) {
 						player.go('right');
@@ -168,7 +168,7 @@ function Catapult_() {
 			this.activate = function() {
 				disableAllButtons();
 				player.x--;
-				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true});
+				map.set(`${player.x}:${player.y}`, {isWall: false, isGenerated: true, color: 'black'});
 				let catapultInterval = setInterval(function() {
 					if (!map.get(`${player.x - 1}:${player.y}`).isWall) {
 						player.go('left');
@@ -199,25 +199,47 @@ function Bomb() {
 
 	this.activate = function() {
 		for (let y = this.y - 5; y <= this.y + 5; y++) {
-			map.set(`${this.x}:${y}`, {isWall: false, isGenerated: true});
+			if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
+				map.set(`${this.x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
+			} else {
+				try {
+					map.get(`${x}:${y}`).color = 'grey';
+				} catch {}
+			}
 		}
 		for (let y = this.y - 4; y <= this.y + 4; y++) {
 			for (let x = this.x - 2; x <= this.x + 2; x++) {
-				map.set(`${x}:${y}`, {isWall: false, isGenerated: true});
+				if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
+					map.set(`${x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
+				} else {
+					map.get(`${x}:${y}`).color = 'grey';
+				}
 			}
 		}
 		for (let y = this.y - 3; y <= this.y + 3; y++) {
 			for (let x = this.x - 3; x <= this.x + 3; x++) {
-				map.set(`${x}:${y}`, {isWall: false, isGenerated: true});
+				if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
+					map.set(`${x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
+				} else {
+					map.get(`${x}:${y}`).color = 'grey';
+				}
 			}
 		}
 		for (let y = this.y - 2; y <= this.y + 2; y++) {
 			for (let x = this.x - 4; x <= this.x + 4; x++) {
-				map.set(`${x}:${y}`, {isWall: false, isGenerated: true});
+				if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
+					map.set(`${x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
+				} else {
+					map.get(`${x}:${y}`).color = 'grey';
+				}
 			}
 		}
 		for (let x = this.x - 5; x <= this.x + 5; x++) {
-			map.set(`${x}:${this.y}`, {isWall: false, isGenerated: true});
+			if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
+				map.set(`${x}:${this.y}`, {isWall: false, isGenerated: true, color: 'grey'});
+			} else {
+				map.get(`${x}:${y}`).color = 'grey';
+			}
 		}
 		this.x = -1;
 		this.y = -1;
@@ -240,7 +262,7 @@ function Bomb() {
 function defineMapContent() {
 	for (let y = -2; y <= mapHeight + 2; y++) {
 		for (let x = -2; x <= mapWidth + 2; x++) {
-			map.set(`${x}:${y}`, {isWall: false, isGenerated: false});
+			map.set(`${x}:${y}`, {isWall: false, isGenerated: false, color: 'black'});
 		}
 	}
 }
@@ -500,38 +522,38 @@ function generateMap() {
 	}
 
 	for (let x = 1; x < mapWidth; x++) {
-		map.set(`${x}:2`, {isGenerated: true, isWall: false});
-		map.set(`${x}:${mapHeight - 3}`, {isGenerated: true, isWall: false});
+		map.set(`${x}:2`, {isGenerated: true, color: 'black', isWall: false});
+		map.set(`${x}:${mapHeight - 3}`, {isGenerated: true, color: 'black', isWall: false});
 	}
 	for (let y = 0; y <= mapHeight; y++) {
-		map.set(`${mapWidth - 1}:${y}`, {isGenerated: true, isWall: true});
+		map.set(`${mapWidth - 1}:${y}`, {isGenerated: true, color: 'black', isWall: true});
 	}
 	for (let x = 1; x < mapWidth; x++) {
 		if (x % 3 == 0) {
-			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: false});
+			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, color: 'black', isWall: false});
 		} else {
-			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, isWall: true});
+			map.set(`${x - 1}:${mapWidth - 3}`, {isGenerated: true, color: 'black', isWall: true});
 		}
 	}
 
 	if (gameMode != 'zen') {
 		finish.x = mapWidth - 2;
 		finish.y = mapHeight - 2;
-		map.set(`${finish.x}:${finish.y}`, {isGenerated: true, isWall: false});
-		map.set(`${finish.x - 1}:${finish.y}`, {isGenerated: true, isWall: false});
-		map.set(`${finish.x - 1}:${finish.y - 1}`, {isGenerated: true, isWall: false});
-		map.set(`${finish.x}:${finish.y - 1}`, {isGenerated: true, isWall: false});
+		map.set(`${finish.x}:${finish.y}`, {isGenerated: true, color: 'black', isWall: false});
+		map.set(`${finish.x - 1}:${finish.y}`, {isGenerated: true, color: 'black', isWall: false});
+		map.set(`${finish.x - 1}:${finish.y - 1}`, {isGenerated: true, color: 'black', isWall: false});
+		map.set(`${finish.x}:${finish.y - 1}`, {isGenerated: true, color: 'black', isWall: false});
 	} else {
 		finish.x = -1;
 		finish.y = -1;
 	}
 
-	map.set(`${player.x}:${player.y}`, {isGenerated: true, isWall: false});
-	map.set(`${player.x}:${player.y + 1}`, {isGenerated: true, isWall: false});
-	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, isWall: false});
-	map.set(`${player.x + 1}:${player.y}`, {isGenerated: true, isWall: false});
-	map.set(`${mapWidth - 4}:${mapHeight - 6}`, {isGenerated: true, isWall: false});
-	map.set(`${mapWidth - 4}:${mapHeight - 4}`, {isGenerated: true, isWall: false});
+	map.set(`${player.x}:${player.y}`, {isGenerated: true, color: 'black', isWall: false});
+	map.set(`${player.x}:${player.y + 1}`, {isGenerated: true, color: 'black', isWall: false});
+	map.set(`${player.x + 1}:${player.y + 1}`, {isGenerated: true, color: 'black', isWall: false});
+	map.set(`${player.x + 1}:${player.y}`, {isGenerated: true, color: 'black', isWall: false});
+	map.set(`${mapWidth - 4}:${mapHeight - 6}`, {isGenerated: true, color: 'black', isWall: false});
+	map.set(`${mapWidth - 4}:${mapHeight - 4}`, {isGenerated: true, color: 'black', isWall: false});
 
 	for (let i = 0; i < coinsCount; i++) {
 		let rx, ry;
@@ -621,7 +643,7 @@ function redraw() {
 	for (let y = 0; y < mapHeight; y++) {
 		for (let x = 0; x < mapWidth; x++) {
 			if (map.get(`${x}:${y}`).isWall) {
-				drawing.putPixel(x, y, 'black');
+				drawing.putPixel(x, y, map.get(`${x}:${y}`).color);
 			}
 		}
 	}
@@ -653,7 +675,7 @@ function redraw() {
 // Очищает экран
 function clearScreen() {
 	context.fillStyle = 'white';
-	context.fillRect(0, 0, mapWidth * box, mapHeight* box);
+	context.fillRect(0, 0, mapWidth * box, mapHeight * box);
 }
 
 // Обработчик нажатий на кнопки
@@ -686,10 +708,13 @@ function onClick(id) {
 	changeButtonsAvaliablity();
 }
 
-// Обработчик нажатий на клавиши
-function onKeyPress(key) {
+let keys = {
+	pressed: [],
+};
+
+let keyInterval = setInterval(function() {
 	if (document.getElementById('keyboard').checked) {
-		switch (key) {
+		switch (keys.pressed[0]) {
 			case 87:
 				if (!up.disabled) {
 					onClick('up');
@@ -719,7 +744,7 @@ function onKeyPress(key) {
 
 	if (document.getElementById('gamepad').checked) {
 		if (document.getElementById('dpad').checked) {
-			switch (key) {
+			switch (keys.pressed[0]) {
 				case 12:
 					if (!up.disabled) {
 						onClick('up');
@@ -748,7 +773,7 @@ function onKeyPress(key) {
 		}
 
 		if (document.getElementById('facebuttons').checked) {
-			switch (key) {
+			switch (keys.pressed[0]) {
 				case 3:
 					if (!up.disabled) {
 						onClick('up');
@@ -776,15 +801,27 @@ function onKeyPress(key) {
 			}
 		}
 	}
-}
+}, 100);
 
 document.addEventListener('keydown', function(event) {
-	onKeyPress(event.keyCode);
+	if (!keys.pressed.includes(event.keyCode)) {
+		keys.pressed = [];
+		if (event.shiftKey) {
+			keys.pressed.push(16);
+		}
+		keys.pressed.push(event.keyCode);
+	}
 });
 document.addEventListener('keyup', function(event) {
-	if (event.keyCode == 82) {
-		highlighting = false;
-		redraw();
+	if (keys.pressed.includes(event.keyCode)) {
+		for (let i of keys.pressed) {
+			if (i == event.keyCode) {
+				for (let j = i; j < keys.pressed.length; j++) {
+					keys.pressed[j] = keys.pressed[j + 1];
+				}
+				keys.pressed.pop();
+			}
+		}
 	}
 });
 
@@ -854,11 +891,13 @@ let levelConstructorIsOpened = false;
 function openLevelConstructor() {
 	if (!levelConstructorIsOpened) {
 		disableAllButtons();
-		document.getElementById('levelconstructor').hidden = false;
+		document.getElementById('levelconstructor-overlay').hidden = false;
+		//document.getElementById('levelconstructor').hidden = false;
 		levelConstructorIsOpened = true;
 	} else {
 		changeButtonsAvaliablity();
-		document.getElementById('levelconstructor').hidden = true;
+		document.getElementById('levelconstructor-overlay').hidden = true;
+		//document.getElementById('levelconstructor').hidden = true;
 		levelConstructorIsOpened = false;
 	}
 }
