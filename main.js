@@ -7,6 +7,8 @@ const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
 const sounds = document.getElementById('sounds');
+let bombCallout = new Image(251, 150);
+bombCallout.src = 'bombcallout.png';
 // Массив с монетами
 let coins = [];
 // Массив с парами порталов
@@ -67,7 +69,7 @@ function getPlatform() {
             return deviceArray[i].device;
         }
     }
-    return None;
+    return 'unknown';
 }
 
 // Возвращает true, если клетка {x, y} пуста, иначе false
@@ -236,7 +238,9 @@ function Bomb() {
 				if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
 					map.set(`${x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
 				} else {
-					map.get(`${x}:${y}`).color = 'grey';
+					try {
+						map.get(`${x}:${y}`).color = 'grey';
+					} catch {}
 				}
 			}
 		}
@@ -245,7 +249,9 @@ function Bomb() {
 				if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
 					map.set(`${x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
 				} else {
-					map.get(`${x}:${y}`).color = 'grey';
+					try {
+						map.get(`${x}:${y}`).color = 'grey';
+					} catch {}
 				}
 			}
 		}
@@ -254,7 +260,9 @@ function Bomb() {
 				if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
 					map.set(`${x}:${y}`, {isWall: false, isGenerated: true, color: 'grey'});
 				} else {
-					map.get(`${x}:${y}`).color = 'grey';
+					try {
+						map.get(`${x}:${y}`).color = 'grey';
+					} catch {}
 				}
 			}
 		}
@@ -262,7 +270,9 @@ function Bomb() {
 			if (Math.floor(Math.random() * 100) <= bombDestroyingChance) {
 				map.set(`${x}:${this.y}`, {isWall: false, isGenerated: true, color: 'grey'});
 			} else {
-				map.get(`${x}:${y}`).color = 'grey';
+				try {
+					map.get(`${x}:${y}`).color = 'grey';
+				} catch {}
 			}
 		}
 		this.x = -1;
@@ -301,6 +311,13 @@ function Bomb() {
 			map.get(`${x}:${mapHeight - 1}`).color = 'black';
 			map.get(`${x}:${mapHeight}`).color = 'black';
 		}
+		playSound('bomb.mp3');
+	}
+	this.carry = function() {
+		player.bombs++;
+		this.x = -1;
+		this.y = -1;
+		redraw();
 	}
 }
 
@@ -328,6 +345,7 @@ let player = {
 	y: 1,
 	points: 0,
 	timePoints: 100,
+	bombs: 0,
 	level: 0,
 	// Для отладки
 	get pos() {
@@ -387,8 +405,8 @@ let player = {
 		}
 		for (let i of bombs) {
 			if ((player.x == i.x) && (player.y == i.y)) {
-				i.activate();
-				playSound('bomb.mp3');
+
+				//i.activate();
 			}
 		}
 	},
@@ -458,6 +476,7 @@ function generateMap() {
 		playSound(`win.mp3`);
 	}
 	player.timePoints = 100;
+	player.bombs = 0;
 	player.x = 1;
 	player.y = 1;
 	defineMapContent();
@@ -716,6 +735,11 @@ function redraw() {
 	} else {
 		drawing.putPixel(player.x, player.y, 'green');
 	}
+	for (let i of bombs) {
+		if ((player.x == i.x) && (player.y == i.y)) {
+			context.drawImage(bombCallout, 0, 0, 251, 150, player.x * box - 38, player.y * box - 53, 83, 50);
+		}
+	}
 }
 
 // Очищает экран
@@ -788,6 +812,24 @@ let keyInterval = setInterval(function() {
 			highlighting = true;
 			redraw();
 			break;
+		case 69:
+			for (let i of bombs) {
+				if ((i.x == player.x) && (i.y == player.y)) {
+					i.activate();
+				}
+			}
+			redraw();
+			break;
+		case 70:
+			for (let i of bombs) {
+				if ((i.x == player.x) && (i.y == player.y)) {
+					i.carry();
+				}
+			}
+			redraw();
+			break;
+		case 82:
+
 	}
 }, 100);
 
@@ -927,3 +969,6 @@ setInterval(function() {
 	}
 }, 500);
 redraw();
+
+//document.cookie = "user=John"; // обновляем только куки с именем 'user'
+//alert(document.cookie); // показываем все куки
