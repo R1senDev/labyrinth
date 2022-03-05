@@ -1,7 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap');
+
 * {
 	margin: 0;
 	padding: 0;
 	text-align: center;
+	font-family: 'Fredoka', sans-serif;
+}
+
+h2 {
+	float: left;
+	font-size: 16px;
+}
+
+button {
+	font-size: 50px;
+}
+
+hr {
+	margin-bottom: 5px;
+	color: rgba(0, 0, 0, 0.3);
 }
 
 #score {
@@ -9,10 +26,6 @@
 	border: 0;
 	width: 95%;
 	background-color: rgba(0, 0, 0, 0);
-}
-
-button {
-	font-size: 50px;
 }
 
 #down {
@@ -47,7 +60,7 @@ button {
 	margin: 20px 0 0 5%;
 }
 
-.overlay2 {
+.overlay-2 {
 	position: absolute;
 	width: 90%;
 	margin: 20px 0 0 5%;
@@ -86,6 +99,7 @@ button {
 	height: 100%;
 	background-color: rgba(0, 0, 0, 0.5);
 	z-index: 1;
+	text-align: center;
 }
 
 #levelconstructor {
@@ -93,22 +107,56 @@ button {
 	height: 50%;
 	width: 50%;
 	margin-left: 25%;
-	margin-top: 10%;
 	z-index: 2;
 	padding: 5px;
+	position: relative;
 }
 
 .x {
 	border: 0;
 	background-color: rgba(0, 0, 0, 0);
-	float: right;
-	color: grey;
-	margin-top: -5px;
+	color: white;
 	font-size: 30px;
+	margin-top: 8%;
+	margin-left: 50%;
 }
 
-h2 {
+.devops {
 	float: left;
-	font-size: 16px;
-	font-family: 'Arial';
+}
+
+input.devops {
+	margin-top: 2px;
+}
+
+label.devops {
+	margin-left: 3px;
+}
+
+.devops-container {
+	margin-bottom: 8px;
+}
+
+.constructor-input {
+	float: right;
+	width: 40%;
+}
+
+#advanced {
+	margin-top: 5px;
+}
+
+#save {
+	margin-right: 3px;
+}
+
+.constructor-buttons {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	margin: 10px;
+}
+
+.constructor-button {
+	font-size: 20px;
 }

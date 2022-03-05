@@ -7,18 +7,35 @@
 </head>
 <body>
 	<div id="levelconstructor-overlay" hidden>
+		<button class="x" onclick="openLevelConstructor()"><b>x</b></button>
 		<div id="levelconstructor">
-			<button class="x" onclick="openLevelConstructor()">X</button>
+			<div class="devops-container">
+				<input type="checkbox" id="dev" class="devops" onchange="switchAdvancedSettings()">
+				<label for="dev" class="devops">Advanced</label><br>
+			</div>
 			<h2>Number of coins: </h2>
-			<input type="number" id="coins" min="0" value="10"><br>
+			<input class="constructor-input" type="number" id="coins" min="0" value="10"><br>
 			<h2>Number of portal pairs: </h2>
-			<input type="number" id="portalpairs" min="0" value="1"><br>
+			<input class="constructor-input" type="number" id="portalpairs" min="0" value="1"><br>
 			<h2>Number of catapults: </h2>
-			<input type="number" id="catapults" min="0" value="2"><br>
+			<input class="constructor-input" type="number" id="catapults" min="0" value="2"><br>
 			<h2>Number of bombs: </h2>
-			<input type="number" id="bombs" min="0" value="10"><br>
+			<input class="constructor-input" type="number" id="bombs" min="0" value="10"><br>
 			<h2>Probability of destruction by bombs of cells: </h2>
-			<input type="number" id="destroyingchance" max="100" min="0" value="50">
+			<input class="constructor-input" type="number" id="destroyingchance" min="0" max="100" value="50"><br>
+			<h2>Map width: </h2>
+			<input class="constructor-input" type="number" id="mapWidth" min="0" value="48"><br>
+			<h2>Map height: </h2>
+			<input class="constructor-input" type="number" id="mapHeight" min="0" value="48"><br>
+			<div id="advanced" hidden>
+				<hr>
+				<h2>Cell size (in pixels): </h2>
+				<input class="constructor-input" type="number" id="box" min="0" value="7"><br>
+			</div>
+			<div class="constructor-buttons">
+				<button id="save" class="constructor-button" onclick="changeMapSettings(false)">Save</button>
+				<button id="saveAndRegenerate" class="constructor-button" onclick="changeMapSettings(true)">Save and regenerate the map</button>
+			</div>
 		</div>
 	</div>
 	<div class="overlay">
@@ -37,21 +54,8 @@
 			<label for="zen">Zen</label>
 		</div>
 	</div>
-	<div class="overlay2">
+	<div class="overlay-2">
 		<div class="float-left">
-			<input type="radio" id="keyboard" name="inputtype" onchange="document.getElementById('dpad').checked = true; document.getElementById('dpad').disabled = true; document.getElementById('facebuttons').disabled = true;" checked>
-			<label for="inputtype">Keyboard</label><br>
-			<input type="radio" id="gamepad" name="inputtype" onchange="document.getElementById('dpad').disabled = false; document.getElementById('facebuttons').disabled = false;">
-			<label for="gamepad">Gamepad <b>(&#946;)</b></label><br>
-			<input type="radio" id="dpad" name="gamepadtype" checked disabled>
-			<label for="dpad">D-pad</label><br>
-			<input type="radio" id="facebuttons" name="gamepadtype" disabled>
-			<label for="facebuttons">Face buttons</label><br>
-			<div class="controls-container">
-				<button class="controls" onclick="controlsHelp()">Controls hint</button>
-			</div>
-		</div>
-		<div class="float-right">
 			<button class="customlevel" onclick="openLevelConstructor()">Create a custom level</button>
 		</div>
 	</div>

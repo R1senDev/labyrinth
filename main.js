@@ -24,14 +24,15 @@ let bombsCount = 10;
 let bugInfo = false;
 let gameMode = 'classic';
 let bombDestroyingChance = 50;
-let box = 5;
-let mapWidth = 69;
-let mapHeight = 69;
+let box = 7;
+let mapWidth = 48;
+let mapHeight = 48;
 canvas.width = mapWidth * box;
 canvas.height = mapHeight * box;
 // Другое, ни на что не влияет
 let highlighting = false;
 
+// Методы рисования на холсте
 let drawing = {
 	putPixel: function(x, y, color) {
 		context.fillStyle = color;
@@ -47,6 +48,29 @@ Object.freeze(drawing);
 // Коллекция с картой
 let map = new Map();
 
+// Всё для определения платформы
+let deviceArray = [
+    {device: 'Android', platform: /Android/},
+    {device: 'iPhone', platform: /iPhone/},
+    {device: 'iPad', platform: /iPad/},
+    {device: 'Symbian', platform: /Symbian/},
+    {device: 'Windows Phone', platform: /Windows Phone/},
+    {device: 'Tablet OS', platform: /Tablet OS/},
+    {device: 'Linux', platform: /Linux/},
+    {device: 'Windows', platform: /Windows NT/},
+    {device: 'Macintosh', platform: /Macintosh/}
+];
+let platform = navigator.userAgent;
+function getPlatform() {
+    for (let i in deviceArray) {
+        if (deviceArray[i].platform.test(platform)) {
+            return deviceArray[i].device;
+        }
+    }
+    return None;
+}
+
+// Возвращает true, если клетка {x, y} пуста, иначе false
 function isFree(x, y) {
 	for (let i of coins) {
 		if ((i.x == x) && (i.y == y)) {
@@ -254,6 +278,28 @@ function Bomb() {
 			map.get(`${x}:0`).isWall = true;
 			map.get(`${x}:${mapHeight - 1}`).isWall = true;
 			map.get(`${x}:${mapHeight}`).isWall = true;
+		}
+		for (let y = -1; y <= mapHeight + 1; y++) {
+			map.get(`-1:${y}`).isWall = true;
+			map.get(`0:${y}`).isWall = true;
+			map.get(`${mapWidth - 1}:${y}`).isWall = true;
+			map.get(`${mapWidth}:${y}`).isWall = true;
+
+			map.get(`-1:${y}`).color = 'black';
+			map.get(`0:${y}`).color = 'black';
+			map.get(`${mapWidth - 1}:${y}`).color = 'black';
+			map.get(`${mapWidth}:${y}`).color = 'black';
+		}
+		for (let x = -1; x <= mapWidth + 1; x++) {
+			map.get(`${x}:-1`).color = 'black';
+			map.get(`${x}:0`).color = 'black';
+			map.get(`${x}:${mapHeight - 1}`).color = 'black';
+			map.get(`${x}:${mapHeight}`).color = 'black';
+
+			map.get(`${x}:-1`).color = 'black';
+			map.get(`${x}:0`).color = 'black';
+			map.get(`${x}:${mapHeight - 1}`).color = 'black';
+			map.get(`${x}:${mapHeight}`).color = 'black';
 		}
 	}
 }
@@ -713,93 +759,35 @@ let keys = {
 };
 
 let keyInterval = setInterval(function() {
-	if (document.getElementById('keyboard').checked) {
-		switch (keys.pressed[0]) {
-			case 87:
-				if (!up.disabled) {
-					onClick('up');
-				}
-				break;
-			case 68:
-				if (!right.disabled) {
-					onClick('right');
-				}
-				break;
-			case 83:
-				if (!down.disabled) {
-					onClick('down');
-				}
-				break;
-			case 65:
-				if (!left.disabled) {
-					onClick('left');
-				}
-				break;
-			case 82:
-				highlighting = true;
-				redraw();
-				break;
-		}
-	}
-
-	if (document.getElementById('gamepad').checked) {
-		if (document.getElementById('dpad').checked) {
-			switch (keys.pressed[0]) {
-				case 12:
-					if (!up.disabled) {
-						onClick('up');
-					}
-					break;
-				case 15:
-					if (!right.disabled) {
-						onClick('right');
-					}
-					break;
-				case 13:
-					if (!down.disabled) {
-						onClick('down');
-					}
-					break;
-				case 14:
-					if (!left.disabled) {
-						onClick('left');
-					}
-					break;
-				case 5:
-					highlighting = true;
-					redraw();
-					break;
+	switch (keys.pressed[0]) {
+		case 87:
+			if (!up.disabled) {
+				onClick('up');
 			}
-		}
-
-		if (document.getElementById('facebuttons').checked) {
-			switch (keys.pressed[0]) {
-				case 3:
-					if (!up.disabled) {
-						onClick('up');
-					}
-					break;
-				case 1:
-					if (!right.disabled) {
-						onClick('right');
-					}
-					break;
-				case 0:
-					if (!down.disabled) {
-						onClick('down');
-					}
-					break;
-				case 2:
-					if (!left.disabled) {
-						onClick('left');
-					}
-					break;
-				case 4:
-					highlighting = true;
-					redraw();
-					break;
+			highlighting = false;
+			break;
+		case 68:
+			if (!right.disabled) {
+				onClick('right');
 			}
-		}
+			highlighting = false;
+			break;
+		case 83:
+			if (!down.disabled) {
+				onClick('down');
+			}
+			highlighting = false;
+			break;
+		case 65:
+			if (!left.disabled) {
+				onClick('left');
+			}
+			highlighting = false;
+			break;
+		case 82:
+			highlighting = true;
+			redraw();
+			break;
 	}
 }, 100);
 
@@ -813,6 +801,9 @@ document.addEventListener('keydown', function(event) {
 	}
 });
 document.addEventListener('keyup', function(event) {
+	if (event.keyCode == 82) {
+		highlighting = false;
+	}
 	if (keys.pressed.includes(event.keyCode)) {
 		for (let i of keys.pressed) {
 			if (i == event.keyCode) {
@@ -831,12 +822,6 @@ let timePointsDescreaser = setInterval(function() {
 		redraw();
 	}
 }, 1000);
-
-function onload() {
-
-}
-
-document.addEventListener('DOMContentLoaded', onload);
 
 function changeGameMode(to) {
 	if ((player.points == 0) || (confirm('Are you sure you want to change the game mode? The score will be reset and the map will be regenerated.'))) {
@@ -873,20 +858,6 @@ function changeGameMode(to) {
 	}
 }
 
-function controlsHelp() {
-	if (document.getElementById('keyboard').checked) {
-		alert('The keyboard control type is selected\nControls:\n[W]/[A]/[S]/[D] - walking up/left/down/right;\n[R] (hold) - contrast lighting of the character');
-	}
-	if (document.getElementById('gamepad').checked) {
-		if (document.getElementById('dpad').checked) {
-			alert('The control type is selected using the directional pad of the gamepad\nControls:\n D-pad (directional pad) - walking;\n[RB] (hold) - contrast lighting of the character');
-		}
-		if (document.getElementById('facebuttons').checked) {
-			alert('The control type is selected using the face buttons of the gamepad\nControls:\n[Y]/[B]/[A]/[X] - walking up/left/down/right;\n[LB] (hold) - contrast lighting of the character');
-		}
-	}
-}
-
 let levelConstructorIsOpened = false;
 function openLevelConstructor() {
 	if (!levelConstructorIsOpened) {
@@ -906,6 +877,45 @@ function switchTheme() {
 	if (document.getElementById('darktheme').checked) {
 		theme = 'dark';
 	}
+}
+
+function onload() {
+	document.getElementById('dev').checked = false;
+}
+document.addEventListener('DOMContentLoaded', onload);
+
+function switchAdvancedSettings() {
+	if (document.getElementById('dev').checked) {
+		document.getElementById('advanced').hidden = false;
+	} else {
+		document.getElementById('advanced').hidden = true;
+	}
+}
+
+function changeMapSettings(regenerate) {
+	coins = [];
+	portalPairs = [];
+	catapult = [];
+	bombs = [];
+	coinsCount = document.getElementById('coins').value;
+	portalPairsCount = document.getElementById('portalpairs').value;
+	catapultCount = document.getElementById('catapults').value;
+	bombsCount = document.getElementById('bombs').value;
+	bombDestroyingChance = document.getElementById('destroyingchance').value;
+	mapWidth = document.getElementById('mapWidth').value;
+	mapHeight = document.getElementById('mapHeight').value;
+
+	box = document.getElementById('box').value;
+
+	if (regenerate) {
+		player.level--;
+		canvas.width = mapWidth * box;
+		canvas.height = mapHeight * box;
+		generateMap();
+
+	}
+
+	openLevelConstructor();
 }
 
 generateMap();
