@@ -1,4 +1,5 @@
 // Настройка холста и других объектов
+const bombsinp = document.getElementById('bombsinp');
 const score = document.getElementById('score');
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
@@ -7,8 +8,6 @@ const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
 const sounds = document.getElementById('sounds');
-let bombCallout = new Image(251, 150);
-bombCallout.src = 'bombcallout.png';
 // Массив с монетами
 let coins = [];
 // Массив с парами порталов
@@ -31,6 +30,11 @@ let mapWidth = 48;
 let mapHeight = 48;
 canvas.width = mapWidth * box;
 canvas.height = mapHeight * box;
+// Графика и т.п.
+let bombCalloutTop = new Image(251, 150);
+bombCalloutTop.src = 'bombcallouttop.png';
+let bombCalloutBottom = new Image(251, 150);
+bombCalloutBottom.src = 'bombcalloutbottom.png';
 // Другое, ни на что не влияет
 let highlighting = false;
 
@@ -153,7 +157,7 @@ function Catapult_() {
 						clearInterval(catapultInterval);
 						changeButtonsAvaliablity();
 					}
-					redraw();
+					//redraw();
 				}, 100);
 			}
 			break;
@@ -170,7 +174,7 @@ function Catapult_() {
 						clearInterval(catapultInterval);
 						changeButtonsAvaliablity();
 					}
-					redraw();
+					//redraw();
 				}, 100);
 			}
 			break;
@@ -186,7 +190,7 @@ function Catapult_() {
 						clearInterval(catapultInterval);
 						changeButtonsAvaliablity();
 					}
-					redraw();
+					//redraw();
 				}, 100);
 			}
 			break;
@@ -203,7 +207,7 @@ function Catapult_() {
 						clearInterval(catapultInterval);
 						changeButtonsAvaliablity();
 					}
-					redraw();
+					//redraw();
 				}, 100);
 			}
 			break;
@@ -317,9 +321,25 @@ function Bomb() {
 		player.bombs++;
 		this.x = -1;
 		this.y = -1;
-		redraw();
+		//redraw();
 	}
 }
+
+class Fps_ {
+	constructor() {
+		this.frames = 0;
+		this.fpsLimit = 200;
+	}
+	get limit() {
+		return this.fpsLimit;
+	}
+	set limit(value) {
+		this.fpsLimit = value;
+		clearInterval(redrawInterval);
+		var redrawInterval = setInterval(redraw, 1000 / this.fpsLimit);
+	}
+}
+let fps = new Fps_();
 
 // Определение содержимого карты
 function defineMapContent() {
@@ -657,7 +677,7 @@ function generateMap() {
 		map.get(`${x}:${mapHeight}`).isWall = true;
 	}
 
-	redraw();
+	//redraw();
 	changeButtonsAvaliablity();
 }
 
@@ -703,6 +723,7 @@ function redraw() {
 			score.value = `Collected ${player.points / 10} coin(s)`;
 			break;
 	}
+	bombsinp.value = `${player.bombs} bomb(s) left`;
 
 	clearScreen();
 	for (let y = 0; y < mapHeight; y++) {
@@ -737,9 +758,15 @@ function redraw() {
 	}
 	for (let i of bombs) {
 		if ((player.x == i.x) && (player.y == i.y)) {
-			context.drawImage(bombCallout, 0, 0, 251, 150, player.x * box - 38, player.y * box - 53, 83, 50);
+			if (player.y > 10) {
+				context.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38, player.y * box - 53, 83, 50);
+			} else {
+				context.drawImage(bombCalloutBottom, 0, 0, 251, 150, player.x * box - 38, player.y * box + box + 3, 83, 50)
+			}
 		}
 	}
+
+	fps.frames++;
 }
 
 // Очищает экран
@@ -767,9 +794,9 @@ function onClick(id) {
 	if ((player.y == finish.y) && (player.x == finish.x)) {
 		player.points += player.timePoints;
 		generateMap();
-		redraw();
+		//redraw();
 	} else {
-		redraw();
+		//redraw();
 	}
 	if ((levelConstructorIsOpened) && (!bugInfo)) {
 		alert('The developer found this bug almost immediately after it appeared, but he is too lazy to fix it, so you just have to accept it as a feature.\nOr just close the unfinished level creation section and forget about this dialog window.')
@@ -782,6 +809,7 @@ let keys = {
 	pressed: [],
 };
 
+let canDropBomb = true;
 let keyInterval = setInterval(function() {
 	switch (keys.pressed[0]) {
 		case 87:
@@ -810,7 +838,7 @@ let keyInterval = setInterval(function() {
 			break;
 		case 82:
 			highlighting = true;
-			redraw();
+			//redraw();
 			break;
 		case 69:
 			for (let i of bombs) {
@@ -818,7 +846,7 @@ let keyInterval = setInterval(function() {
 					i.activate();
 				}
 			}
-			redraw();
+			//redraw();
 			break;
 		case 70:
 			for (let i of bombs) {
@@ -826,10 +854,26 @@ let keyInterval = setInterval(function() {
 					i.carry();
 				}
 			}
-			redraw();
+			keys.pressed = [];
+			//redraw();
 			break;
-		case 82:
-
+		case 84:
+			if ((player.bombs > 0) && (canDropBomb)) {
+				for (let i of bombs) {
+					if ((i.x == -1) && (i.y == -1)) {
+						i.x = player.x;
+						i.y = player.y;
+						i.activate();
+						player.bombs--;
+						canDropBomb = false;
+						setTimeout(function() {
+							canDropBomb = true;
+						}, 5000);
+						//redraw();
+						break;
+					}
+				}
+			}
 	}
 }, 100);
 
@@ -861,7 +905,7 @@ document.addEventListener('keyup', function(event) {
 let timePointsDescreaser = setInterval(function() {
 	if (player.timePoints > 10) {
 		player.timePoints--;
-		redraw();
+		//redraw();
 	}
 }, 1000);
 
@@ -954,7 +998,6 @@ function changeMapSettings(regenerate) {
 		canvas.width = mapWidth * box;
 		canvas.height = mapHeight * box;
 		generateMap();
-
 	}
 
 	openLevelConstructor();
@@ -965,10 +1008,11 @@ setInterval(function() {
 	if (gameMode == 'gravity') {
 		player.go('down');
 		changeButtonsAvaliablity();
-		redraw();
+		//redraw();
 	}
 }, 500);
-redraw();
-
-//document.cookie = "user=John"; // обновляем только куки с именем 'user'
-//alert(document.cookie); // показываем все куки
+fps.limit = 60;
+setInterval(function() {
+	document.getElementById('fps').value = `${fps.frames} FPS`;
+	fps.frames = 0;
+}, 1000);
