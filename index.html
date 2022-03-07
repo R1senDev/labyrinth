@@ -31,17 +31,33 @@
 				<hr>
 				<h2>Cell size (in pixels): </h2>
 				<input class="constructor-input" type="number" id="box" min="0" value="7"><br>
+				<h2>Starting point:</h2><br>
+				<h2>&nbsp;&nbsp;&nbsp;&nbsp;X: </h2>
+				<input class="constructor-input" type="number" id="startX" value="1"><br>
+				<h2>&nbsp;&nbsp;&nbsp;&nbsp;Y: </h2>
+				<input class="constructor-input" type="number" id="startY" value="1"><br>
+				<h2>Finish point:</h2><br>
+				<h2>&nbsp;&nbsp;&nbsp;&nbsp;X: </h2>
+				<input class="constructor-input" type="number" id="finishX" value="46"><br>
+				<h2>&nbsp;&nbsp;&nbsp;&nbsp;Y: </h2>
+				<input class="constructor-input" type="number" id="finishY" value="46"><br>
 			</div>
 			<div class="constructor-buttons">
 				<button id="save" class="constructor-button" onclick="changeMapSettings(false)">Save</button>
-				<button id="saveAndRegenerate" class="constructor-button" onclick="changeMapSettings(true)">Save and regenerate the map</button>
+				<button id="saveAndRegenerate" class="constructor-button" onclick="if (player.level > 1) {player.level--;} changeMapSettings(true)">Save and regenerate the map</button>
 			</div>
 		</div>
 	</div>
 	<div class="overlay">
 		<div class="float-left">
-			<input type="checkbox" id="darktheme">
-			<label for="darktheme" onchange="switchTheme()">Dark theme</label><br>
+			<input type="checkbox" id="showfps" onclick="
+				if (document.getElementById('showfps').checked) {
+					document.getElementById('fps').hidden = false;
+				} else {
+					document.getElementById('fps').hidden = true;
+				}
+			" checked>
+			<label for="showfps">Show FPS</label><br>
 			<input type="checkbox" id="sounds" checked>
 			<label for="sounds">Sounds</label><br>
 		</div>
@@ -50,6 +66,10 @@
 			<label for="classic">Classic</label><br>
 			<input type="radio" id="gravity" name="gamemode" onchange="changeGameMode('gravity')">
 			<label for="timer">Gravity</label><br>
+			<input type="radio" id="survival" name="gamemode" onchange="changeGameMode('survival')">
+			<label for="survival">Survival</label><br>
+			<input type="radio" id="powerFailure" name="gamemode" onchange="changeGameMode('powerFailure')">
+			<label for="powerFailure">Power failure</label><br>
 			<input type="radio" id="zen" name="gamemode" onchange="changeGameMode('zen')">
 			<label for="zen">Zen</label>
 		</div>
@@ -59,7 +79,7 @@
 			<button class="customlevel" onclick="openLevelConstructor()">Create a custom level</button>
 		</div>
 	</div>
-	<input type="text" id="fps" value="-- FPS" disabled><br>
+	<input type="text" id="fps" value="0 FPS" disabled><br>
 	<input type="text" id="score" disabled><br>
 	<input type="text" id="bombsinp" disabled><br>
 	<canvas id="canvas"></canvas><br>
@@ -69,6 +89,7 @@
 		<button id="right" onclick="onClick('right')">&#8594;</button><br>
 		<button id="down" onclick="onClick('down')">&#8595;</button>
 	</div>
+	<button id="howtoplay" onclick="alert('How to play?\nThe main task is to get to the finish line. It is usually located in the lower right corner of the screen and the color is cyan. The faster you get to the finish line, the more points you get. You can also collect coins (indicated in yellow), which give you 10 points for each.\nRed cells are bombs. They are safe for you, but in Survival mode they stun you for 3 seconds. They can be blown up immediately or taken to inventory. From the inventory, the bomb can be detonated by pressing the [T] key.\nCatapults are indicated in blue. They drop you to the nearest wall in a random (but strictly defined for each!) direction.\nR1senDev and the team wish you a successful game!')">How to play</button>
 
 	<script type="text/javascript" src="main.js"></script>
 </body>

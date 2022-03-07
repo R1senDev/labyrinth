@@ -1,31 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap');
-
 * {
 	margin: 0;
 	padding: 0;
 	text-align: center;
-	font-family: 'Fredoka', sans-serif;
 }
 
-h2 {
-	float: left;
-	font-size: 16px;
-}
-
-button {
-	font-size: 50px;
-}
-
-hr {
-	margin-bottom: 5px;
-	color: rgba(0, 0, 0, 0.3);
-}
-
-#score {
+#score, #bombsinp, #fps {
 	margin: 5px;
 	border: 0;
 	width: 95%;
 	background-color: rgba(0, 0, 0, 0);
+}
+
+#fps {
+	font-size: 10px;
+	color: green;
+}
+
+button {
+	font-size: 50px;
 }
 
 #down {
@@ -60,10 +52,10 @@ hr {
 	margin: 20px 0 0 5%;
 }
 
-.overlay-2 {
+.overlay2 {
 	position: absolute;
 	width: 90%;
-	margin: 20px 0 0 5%;
+	margin-left: 5%;
 	margin-top: 200px;
 }
 
@@ -99,7 +91,6 @@ hr {
 	height: 100%;
 	background-color: rgba(0, 0, 0, 0.5);
 	z-index: 1;
-	text-align: center;
 }
 
 #levelconstructor {
@@ -107,56 +98,22 @@ hr {
 	height: 50%;
 	width: 50%;
 	margin-left: 25%;
+	margin-top: 10%;
 	z-index: 2;
 	padding: 5px;
-	position: relative;
 }
 
 .x {
 	border: 0;
 	background-color: rgba(0, 0, 0, 0);
-	color: white;
-	font-size: 30px;
-	margin-top: 8%;
-	margin-left: 50%;
-}
-
-.devops {
-	float: left;
-}
-
-input.devops {
-	margin-top: 2px;
-}
-
-label.devops {
-	margin-left: 3px;
-}
-
-.devops-container {
-	margin-bottom: 8px;
-}
-
-.constructor-input {
 	float: right;
-	width: 40%;
+	color: grey;
+	margin-top: -5px;
+	font-size: 30px;
 }
 
-#advanced {
-	margin-top: 5px;
-}
-
-#save {
-	margin-right: 3px;
-}
-
-.constructor-buttons {
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	margin: 10px;
-}
-
-.constructor-button {
-	font-size: 20px;
+h2 {
+	float: left;
+	font-size: 16px;
+	font-family: 'Arial';
 }

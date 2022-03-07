@@ -33,9 +33,7 @@ canvas.height = mapHeight * box;
 // Графика и т.п.
 let bombCalloutTop = new Image(251, 150);
 bombCalloutTop.src = 'bombcallouttop.png';
-let bombCalloutBottom = new Image(251, 150);
-bombCalloutBottom.src = 'bombcalloutbottom.png';
-// Другое, ни на что не влияет
+// Другое
 let highlighting = false;
 
 // Методы рисования на холсте
@@ -316,6 +314,12 @@ function Bomb() {
 			map.get(`${x}:${mapHeight}`).color = 'black';
 		}
 		playSound('bomb.mp3');
+		if (gameMode == 'survival') {
+			disableAllButtons();
+			setTimeout(function() {
+				changeButtonsAvaliablity();
+			}, 3000);
+		}
 	}
 	this.carry = function() {
 		player.bombs++;
@@ -709,23 +713,30 @@ function changeButtonsAvaliablity() {
 	}
 }
 
+let playerPixel = {
+	x: function() {
+		return player.x + Math.round(box / 2);
+	},
+	y: function() {
+		return player.y + Math.round(box / 2);
+	},
+}
+
 // Рендерит
 // .
 function redraw() {
-	switch (gameMode) {
-		case 'classic':
-			score.value = `Score: ${player.points} (+${player.timePoints}), completed ${player.level - 1} level(s)`;
-			break;
-		case '':
-			score.value = `Score: ${player.points} (${player?.timer}s left), completed ${player.level - 1} level(s)`;
-			break;
-		case 'zen':
-			score.value = `Collected ${player.points / 10} coin(s)`;
-			break;
+	if (gameMode == 'zen') {
+		score.value = `Collected ${player.points / 10} coin(s)`;
+	} else {
+		score.value = `Score: ${player.points} (+${player.timePoints}), completed ${player.level - 1} level(s)`;
 	}
 	bombsinp.value = `${player.bombs} bomb(s) left`;
 
-	clearScreen();
+	if (gameMode != 'powerFailure'){
+		clearScreen('white');
+	} else {
+		clearScreen('black');
+	}
 	for (let y = 0; y < mapHeight; y++) {
 		for (let x = 0; x < mapWidth; x++) {
 			if (map.get(`${x}:${y}`).isWall) {
@@ -733,19 +744,155 @@ function redraw() {
 			}
 		}
 	}
-	drawing.putPixel(finish.x, finish.y, 'cyan');
-	for (let i of coins) {
-		drawing.putPixel(i.x, i.y, 'gold');
-	}
-	for (let i of portalPairs) {
-		drawing.putPixel(i.x1, i.y1, 'purple');
-		drawing.putPixel(i.x2, i.y2, 'purple');
-	}
-	for (let i of catapult) {
-		drawing.putPixel(i.x, i.y, 'blue');
-	}
-	for (let i of bombs) {
-		drawing.putPixel(i.x, i.y, 'red');
+	if (gameMode != 'powerFailure') {
+		drawing.putPixel(finish.x, finish.y, 'cyan');
+		for (let i of coins) {
+			drawing.putPixel(i.x, i.y, 'gold');
+		}
+		for (let i of portalPairs) {
+			drawing.putPixel(i.x1, i.y1, 'purple');
+			drawing.putPixel(i.x2, i.y2, 'purple');
+		}
+		for (let i of catapult) {
+			drawing.putPixel(i.x, i.y, 'blue');
+		}
+		for (let i of bombs) {
+			drawing.putPixel(i.x, i.y, 'red');
+		}
+	} else { // RTX 
+		let radius = 5;
+		for (let y = player.y; y >= player.y - radius; y--) {
+			if (!map.get(`${player.x}:${y}`).isWall) {
+				drawing.putPixel(player.x, y, 'white');
+				if ((player.x == finish.x) && (y == finish.y)) {
+					drawing.putPixel(finish.x, finish.y, 'cyan');
+				}
+				for (let i of coins) {
+					if ((player.x == i.x) && (y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'gold');
+					}
+				}
+				for (let i of portalPairs) {
+					if ((player.x == i.x1) && (y == i.y1)) {
+						drawing.putPixel(i.x1, i.y1, 'purple');
+					}
+					if ((player.x == i.x2) && (y == i.y2)) {
+						drawing.putPixel(i.x2, i.y2, 'purple');
+					}
+				}
+				for (let i of catapult) {
+					if ((player.x == i.x) && (y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'blue');
+					}
+				}
+				for (let i of bombs) {
+					if ((player.x == i.x) && (y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'red');
+					}
+				}
+			} else {
+				break;
+			}
+		}
+		for (let x = player.x; x <= player.x + radius; x++) {
+			if (!map.get(`${x}:${player.y}`).isWall) {
+				drawing.putPixel(x, player.y, 'white');
+				if ((x == finish.x) && (player.y == finish.y)) {
+					drawing.putPixel(finish.x, finish.y, 'cyan');
+				}
+				for (let i of coins) {
+					if ((x == i.x) && (player.y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'gold');
+					}
+				}
+				for (let i of portalPairs) {
+					if ((x == i.x1) && (player.y == i.y1)) {
+						drawing.putPixel(i.x1, i.y1, 'purple');
+					}
+					if ((x == i.x2) && (player.y == i.y2)) {
+						drawing.putPixel(i.x2, i.y2, 'purple');
+					}
+				}
+				for (let i of catapult) {
+					if ((x == i.x) && (player.y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'blue');
+					}
+				}
+				for (let i of bombs) {
+					if ((x == i.x) && (player.y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'red');
+					}
+				}
+			} else {
+				break;
+			}
+		}
+		for (let y = player.y; y <= player.y + radius; y++) {
+			if (!map.get(`${player.x}:${y}`).isWall) {
+				drawing.putPixel(player.x, y, 'white');
+				if ((player.x == finish.x) && (y == finish.y)) {
+					drawing.putPixel(finish.x, finish.y, 'cyan');
+				}
+				for (let i of coins) {
+					if ((player.x == i.x) && (y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'gold');
+					}
+				}
+				for (let i of portalPairs) {
+					if ((player.x == i.x1) && (y == i.y1)) {
+						drawing.putPixel(i.x1, i.y1, 'purple');
+					}
+					if ((player.x == i.x2) && (y == i.y2)) {
+						drawing.putPixel(i.x2, i.y2, 'purple');
+					}
+				}
+				for (let i of catapult) {
+					if ((player.x == i.x) && (y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'blue');
+					}
+				}
+				for (let i of bombs) {
+					if ((player.x == i.x) && (y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'red');
+					}
+				}
+			} else {
+				break;
+			}
+		}
+		for (let x = player.x; x >= player.x - radius; x--) {
+			if (!map.get(`${x}:${player.y}`).isWall) {
+				drawing.putPixel(x, player.y, 'white');
+				if ((x == finish.x) && (player.y == finish.y)) {
+					drawing.putPixel(finish.x, finish.y, 'cyan');
+				}
+				for (let i of coins) {
+					if ((x == i.x) && (player.y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'gold');
+					}
+				}
+				for (let i of portalPairs) {
+					if ((x == i.x1) && (player.y == i.y1)) {
+						drawing.putPixel(i.x1, i.y1, 'purple');
+					}
+					if ((x == i.x2) && (player.y == i.y2)) {
+						drawing.putPixel(i.x2, i.y2, 'purple');
+					}
+				}
+				for (let i of catapult) {
+					if ((x == i.x) && (player.y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'blue');
+					}
+				}
+				for (let i of bombs) {
+					if ((x == i.x) && (player.y == i.y)) {
+						drawing.putPixel(i.x, i.y, 'red');
+					}
+				}
+			} else {
+				break;
+			}
+		}
 	}
 	if (highlighting) {
 		for (let y = player.y - 4; y <= player.y + 4; y++) {
@@ -758,11 +905,7 @@ function redraw() {
 	}
 	for (let i of bombs) {
 		if ((player.x == i.x) && (player.y == i.y)) {
-			if (player.y > 10) {
-				context.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38, player.y * box - 53, 83, 50);
-			} else {
-				context.drawImage(bombCalloutBottom, 0, 0, 251, 150, player.x * box - 38, player.y * box + box + 3, 83, 50)
-			}
+			context.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38, player.y * box - 53, 83, 50);
 		}
 	}
 
@@ -770,8 +913,8 @@ function redraw() {
 }
 
 // Очищает экран
-function clearScreen() {
-	context.fillStyle = 'white';
+function clearScreen(color) {
+	context.fillStyle = color;
 	context.fillRect(0, 0, mapWidth * box, mapHeight * box);
 }
 
@@ -928,17 +1071,15 @@ function changeGameMode(to) {
 				player.points = 0;
 				generateMap();
 				break;
-		}
-	} else {
-		switch (gameMode) {
-			case 'classic':
-				document.getElementById('classic').checked = true;
+			case 'powerFailure':
+				gameMode = 'powerFailure';
+				player.points = 0;
+				generateMap();
 				break;
-			case 'timer':
-				document.getElementById('timer').checked = true;
-				break;
-			case 'zen':
-				document.getElementById('zen').checked = true;
+			case 'survival':
+				gameMode = 'survival';
+				player.points = 0;
+				generateMap();
 				break;
 		}
 	}
@@ -949,19 +1090,11 @@ function openLevelConstructor() {
 	if (!levelConstructorIsOpened) {
 		disableAllButtons();
 		document.getElementById('levelconstructor-overlay').hidden = false;
-		//document.getElementById('levelconstructor').hidden = false;
 		levelConstructorIsOpened = true;
 	} else {
 		changeButtonsAvaliablity();
 		document.getElementById('levelconstructor-overlay').hidden = true;
-		//document.getElementById('levelconstructor').hidden = true;
 		levelConstructorIsOpened = false;
-	}
-}
-
-function switchTheme() {
-	if (document.getElementById('darktheme').checked) {
-		theme = 'dark';
 	}
 }
 
@@ -998,6 +1131,10 @@ function changeMapSettings(regenerate) {
 		canvas.width = mapWidth * box;
 		canvas.height = mapHeight * box;
 		generateMap();
+		player.x = document.getElementById('startX').value;
+		player.y = document.getElementById('startY').value;
+		finish.x = document.getElementById('finishX').value;
+		finish.y = document.getElementById('finishY').value;
 	}
 
 	openLevelConstructor();
