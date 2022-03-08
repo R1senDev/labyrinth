@@ -28,6 +28,7 @@ let bombDestroyingChance = 50;
 let box = 7;
 let mapWidth = 48;
 let mapHeight = 48;
+let pointsPerCoin = 10;
 canvas.width = mapWidth * box;
 canvas.height = mapHeight * box;
 // Графика и т.п.
@@ -402,7 +403,7 @@ let player = {
 			if ((player.x == coins[i].x) && (player.y == coins[i].y)) {
 				coins[i].x = -1;
 				coins[i].y = -1;
-				player.points += 10;
+				player.points += pointsPerCoin;
 				playSound('coin.mp3');
 			}
 		}
@@ -1123,6 +1124,7 @@ function changeMapSettings(regenerate) {
 	bombDestroyingChance = document.getElementById('destroyingchance').value;
 	mapWidth = document.getElementById('mapWidth').value;
 	mapHeight = document.getElementById('mapHeight').value;
+	pointsPerCoin = document.getElementById('pointsPerCoin').value;
 
 	box = document.getElementById('box').value;
 

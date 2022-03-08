@@ -21,8 +21,6 @@
 			<input class="constructor-input" type="number" id="catapults" min="0" value="2"><br>
 			<h2>Number of bombs: </h2>
 			<input class="constructor-input" type="number" id="bombs" min="0" value="10"><br>
-			<h2>Probability of destruction by bombs of cells: </h2>
-			<input class="constructor-input" type="number" id="destroyingchance" min="0" max="100" value="50"><br>
 			<h2>Map width: </h2>
 			<input class="constructor-input" type="number" id="mapWidth" min="0" value="48"><br>
 			<h2>Map height: </h2>
@@ -31,6 +29,8 @@
 				<hr>
 				<h2>Cell size (in pixels): </h2>
 				<input class="constructor-input" type="number" id="box" min="0" value="7"><br>
+				<h2>Probability of destruction by bombs of cells: </h2>
+				<input class="constructor-input" type="number" id="destroyingchance" min="0" max="100" value="50"><br>
 				<h2>Starting point:</h2><br>
 				<h2>&nbsp;&nbsp;&nbsp;&nbsp;X: </h2>
 				<input class="constructor-input" type="number" id="startX" value="1"><br>
@@ -41,6 +41,8 @@
 				<input class="constructor-input" type="number" id="finishX" value="46"><br>
 				<h2>&nbsp;&nbsp;&nbsp;&nbsp;Y: </h2>
 				<input class="constructor-input" type="number" id="finishY" value="46"><br>
+				<h2>Points per coin: </h2>
+				<input class="constructor-input" type="number" id="pointsPerCoin" min="0" value="10"><br>
 			</div>
 			<div class="constructor-buttons">
 				<button id="save" class="constructor-button" onclick="changeMapSettings(false)">Save</button>
@@ -89,7 +91,7 @@
 		<button id="right" onclick="onClick('right')">&#8594;</button><br>
 		<button id="down" onclick="onClick('down')">&#8595;</button>
 	</div>
-	<button id="howtoplay" onclick="alert('How to play?\nThe main task is to get to the finish line. It is usually located in the lower right corner of the screen and the color is cyan. The faster you get to the finish line, the more points you get. You can also collect coins (indicated in yellow), which give you 10 points for each.\nRed cells are bombs. They are safe for you, but in Survival mode they stun you for 3 seconds. They can be blown up immediately or taken to inventory. From the inventory, the bomb can be detonated by pressing the [T] key.\nCatapults are indicated in blue. They drop you to the nearest wall in a random (but strictly defined for each!) direction.\nR1senDev and the team wish you a successful game!')">How to play</button>
+	<button id="howtoplay" onclick="alert('How to play?\nThe main task is to get to the finish. It is usually located in the lower right corner of the screen and the color is cyan. The faster you get to the finish, the more points you get. You can also collect coins (indicated in yellow), which give you 10 points for each.\nRed cells are bombs. They are safe for you, but in Survival mode they stun you for 3 seconds. They can be blown up immediately or taken to inventory. From the inventory, the bomb can be detonated by pressing the [T] key.\nCatapults are indicated in blue. They drop you to the nearest wall in a random (but strictly defined for each!) direction.\nR1senDev and the team wish you a successful game!')">How to play</button>
 
 	<script type="text/javascript" src="main.js"></script>
 </body>
