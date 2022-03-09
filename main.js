@@ -1150,7 +1150,7 @@ setInterval(function() {
 		//redraw();
 	}
 }, 500);
-fps.limit = 60;
+fps.limit = 0;
 setInterval(function() {
 	document.getElementById('fps').value = `${fps.frames} FPS`;
 	fps.frames = 0;
