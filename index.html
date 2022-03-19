@@ -60,6 +60,20 @@
 				}
 			" checked>
 			<label for="showfps">Show FPS</label><br>
+			<input type="checkbox" id="showbuttons" onclick="
+			if (!document.getElementById('showbuttons').checked) {
+				up.hidden = true;
+				right.hidden = true;
+				down.hidden = true;
+				left.hidden = true;
+			} else {
+				up.hidden = false;
+				right.hidden = false;
+				down.hidden = false;
+				left.hidden = false;
+			}
+			">
+			<label for="showbuttons">Show on-screen buttons</label><br>
 			<input type="checkbox" id="sounds" checked>
 			<label for="sounds">Sounds</label><br>	
 		</div>

@@ -330,6 +330,10 @@ function Bomb() {
 	}
 }
 
+// Сам не вполне понимаю, зачем этот класс вообще
+// нужен, так как можно было проще. Но тем не ме-
+// нее это работает и ничего переделывать я не
+// собираюсь :)
 class Fps_ {
 	constructor() {
 		this.frames = 0;
@@ -1101,6 +1105,12 @@ function openLevelConstructor() {
 
 function onload() {
 	document.getElementById('dev').checked = false;
+	if (!document.getElementById('showbuttons').checked) {
+		up.hidden = true;
+		right.hidden = true;
+		down.hidden = true;
+		left.hidden = true;
+	}
 }
 document.addEventListener('DOMContentLoaded', onload);
 
@@ -1150,7 +1160,7 @@ setInterval(function() {
 		//redraw();
 	}
 }, 500);
-fps.limit = 0;
+fps.limit = 60;
 setInterval(function() {
 	document.getElementById('fps').value = `${fps.frames} FPS`;
 	fps.frames = 0;
