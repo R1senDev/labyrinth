@@ -28,9 +28,10 @@ let bombDestroyingChance = 50;
 let box = 7;
 let mapWidth = 48;
 let mapHeight = 48;
+let safezone = 50;
 let pointsPerCoin = 10;
-canvas.width = mapWidth * box;
-canvas.height = mapHeight * box;
+canvas.width = mapWidth * box + safezone;
+canvas.height = mapHeight * box + safezone;
 // Графика и т.п.
 let bombCalloutTop = new Image(251, 150);
 bombCalloutTop.src = 'bombcallouttop.png';
@@ -41,7 +42,7 @@ let highlighting = false;
 let drawing = {
 	putPixel: function(x, y, color) {
 		context.fillStyle = color;
-		context.fillRect(x * box, y * box, box, box);
+		context.fillRect(x * box + safezone, y * box + safezone, box, box);
 	},
 	fillRectByAngle: function(x1, y1, x2, y2, color) {
 		context.fillStyle = color;
@@ -908,9 +909,14 @@ function redraw() {
 	} else {
 		drawing.putPixel(player.x, player.y, 'green');
 	}
+	if (gameMode == 'powerFailure') {
+		drawing.putPixel(-1, -1, 'black');
+	} else {
+		drawing.putPixel(-1, -1, 'white');
+	}
 	for (let i of bombs) {
 		if ((player.x == i.x) && (player.y == i.y)) {
-			context.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38, player.y * box - 53, 83, 50);
+			context.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38 + safezone, player.y * box - 53 + safezone, 83, 50);
 		}
 	}
 
@@ -920,7 +926,7 @@ function redraw() {
 // Очищает экран
 function clearScreen(color) {
 	context.fillStyle = color;
-	context.fillRect(0, 0, mapWidth * box, mapHeight * box);
+	context.fillRect(0, 0, mapWidth * box + safezone, mapHeight * box + safezone);
 }
 
 // Обработчик нажатий на кнопки
@@ -1140,8 +1146,8 @@ function changeMapSettings(regenerate) {
 
 	if (regenerate) {
 		player.level--;
-		canvas.width = mapWidth * box;
-		canvas.height = mapHeight * box;
+		canvas.width = mapWidth * box + safezone * 2;
+		canvas.height = mapHeight * box + safezone * 2;
 		generateMap();
 		player.x = document.getElementById('startX').value;
 		player.y = document.getElementById('startY').value;
