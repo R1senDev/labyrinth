@@ -52,8 +52,12 @@
 	</div>
 	<div class="overlay">
 		<div class="float-left">
+			<input type="checkbox" id="sounds" checked>
+			<label for="sounds">Sounds</label><br>
+			<input type="checkbox" id="resourcepack" onclick="resourcePack.use = this.checked" checked>
+			<label for="resourcepack">Use resource pack</label><br>
 			<input type="checkbox" id="showfps" onclick="
-				if (document.getElementById('showfps').checked) {
+				if (this.checked) {
 					document.getElementById('fps').hidden = false;
 				} else {
 					document.getElementById('fps').hidden = true;
@@ -61,7 +65,7 @@
 			" checked>
 			<label for="showfps">Show FPS</label><br>
 			<input type="checkbox" id="showbuttons" onclick="
-			if (!document.getElementById('showbuttons').checked) {
+			if (!this.checked) {
 				up.hidden = true;
 				right.hidden = true;
 				down.hidden = true;
@@ -74,8 +78,6 @@
 			}
 			">
 			<label for="showbuttons">Show on-screen buttons</label><br>
-			<input type="checkbox" id="sounds" checked>
-			<label for="sounds">Sounds</label><br>	
 		</div>
 		<div class="float-right">
 			<input type="radio" id="classic" name="gamemode" onchange="changeGameMode('classic')" checked>
@@ -105,7 +107,7 @@
 		<button id="right" onclick="onClick('right')">&#8594;</button><br>
 		<button id="down" onclick="onClick('down')">&#8595;</button>
 	</div>
-	<button id="howtoplay" onclick="alert('How to play?\nThe main task is to get to the finish. It is usually located in the lower right corner of the screen and the color is cyan. The faster you get to the finish, the more points you get. You can also collect coins (indicated in yellow), which give you 10 points for each.\nRed cells are bombs. They are safe for you, but in Survival mode they stun you for 3 seconds. They can be blown up immediately or taken to inventory. From the inventory, the bomb can be detonated by pressing the [T] key.\nCatapults are indicated in blue. They drop you to the nearest wall in a random (but strictly defined for each!) direction.\nR1senDev and the team wish you a successful game!')">How to play</button>
+	<button id="howtoplay" onclick="alert('How to play?\nThe main task is to get to the finish. It is usually located in the lower right corner of the screen and the color is cyan (if you\'re don\'t using texture pack). The faster you get to the finish, the more points you get. You can also collect coins (indicated in yellow if you\'re don\'t using texture pack), which give you 10 points for each.\nRed cells (if you\'re don\'t using texture pack) are bombs. They are safe for you, but in Survival mode they stun you for 3 seconds. They can be blown up immediately or taken to inventory. From the inventory, the bomb can be detonated by pressing the [T] key.\nCatapults are indicated in blue (if you\'re don\'t using texture pack). They drop you to the nearest wall in a random (but strictly defined for each!) direction.\nR1senDev and the team wish you a successful game!')">How to play</button>
 
 	<script type="text/javascript" src="main.js"></script>
 </body>

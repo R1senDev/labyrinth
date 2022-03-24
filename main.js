@@ -2,7 +2,7 @@
 const bombsinp = document.getElementById('bombsinp');
 const score = document.getElementById('score');
 const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
 const up = document.getElementById('up');
 const right = document.getElementById('right');
 const down = document.getElementById('down');
@@ -42,7 +42,7 @@ let resourcePack = {
 	},
 };
 let pointsPerCoin = 10;
-canvas.width = mapWidth * box + safezone;
+canvas.width = mapWidth * box + safezone * 2;
 canvas.height = mapHeight * box + safezone;
 
 // Графика и т.п.
@@ -57,6 +57,7 @@ let sprites = {
 	player: new Image(7, 7),
 	finish: new Image(7, 7),
 	wall: new Image(7, 7),
+	brokenWall: new Image(7, 7),
 	coin: new Image(7, 7),
 	portal: new Image(7, 7),
 	catapult: new Image(7, 7),
@@ -67,6 +68,7 @@ if (resourcePack.use) {
 	sprites.player.src = 'resources/player.png';
 	sprites.finish.src = 'resources/finish.png';
 	sprites.wall.src = 'resources/wall.png';
+	sprites.brokenWall.src = 'resources/brokenwall.png';
 	sprites.coin.src = 'resources/coin.png';
 	sprites.portal.src = 'resources/portal.png';
 	sprites.catapult.src = 'resources/catapult.png';
@@ -79,12 +81,12 @@ let highlighting = false;
 // Методы рисования на холсте
 let drawing = {
 	putPixel: function(x, y, color) {
-		context.fillStyle = color;
-		context.fillRect(x * box + safezone, y * box + safezone, box, box);
+		ctx.fillStyle = color;
+		ctx.fillRect(x * box + safezone, y * box + safezone, box, box);
 	},
 	fillRectByAngle: function(x1, y1, x2, y2, color) {
-		context.fillStyle = color;
-		context.fillRect(x1, y2, x2 - x1, y2 - y1);
+		ctx.fillStyle = color;
+		ctx.fillRect(x1, y2, x2 - x1, y2 - y1);
 	},
 };
 Object.freeze(drawing);
@@ -780,7 +782,7 @@ function redraw() {
 			if (map.get(`${x}:${y}`).isWall) {
 				if (resourcePack.use) {
 					try {
-						context.drawImage(sprites.wall, 0, 0, 7, 7, x * box + safezone, y * box + safezone, box, box);
+						ctx.drawImage(sprites.wall, 0, 0, sprites.wall.width, sprites.wall.height, x * box + safezone, y * box + safezone, box, box);
 					} catch {
 						drawing.putPixel(x, y, map.get(`${x}:${y}`).color);
 						resourcePack.use = false;
@@ -795,7 +797,7 @@ function redraw() {
 	if (gameMode != 'powerFailure') {
 		if (resourcePack.use) {
 			try {
-				context.drawImage(sprites.finish, 0, 0, 7, 7, finish.x * box + safezone, finish.y * box + safezone, box, box);
+				ctx.drawImage(sprites.finish, 0, 0, sprites.finish.width, sprites.finish.height, finish.x * box + safezone, finish.y * box + safezone, box, box);
 			} catch {
 				drawing.putPixel(finish.x, finish.y, 'cyan');
 				resourcePack.use = false;
@@ -807,7 +809,7 @@ function redraw() {
 		for (let i of coins) {
 			if (resourcePack.use) {
 				try {
-					context.drawImage(sprites.coin, 0, 0, 7, 7, i.x * box + safezone, i.y * box + safezone, box, box);
+					ctx.drawImage(sprites.coin, 0, 0, sprites.coin.width, sprites.coin.height, i.x * box + safezone, i.y * box + safezone, box, box);
 				} catch {
 					drawing.putPixel(i.x, i.y, 'gold');
 					resourcePack.use = false;
@@ -820,8 +822,8 @@ function redraw() {
 		for (let i of portalPairs) {
 			if (resourcePack.use) {
 				try {
-					context.drawImage(sprites.portal, 0, 0, 7, 7, i.x1 * box + safezone, i.y1 * box + safezone, box, box);
-					context.drawImage(sprites.portal, 0, 0, 7, 7, i.x2 * box + safezone, i.y2 * box + safezone, box, box);
+					ctx.drawImage(sprites.portal, 0, 0, sprites.portal.width, sprites.portal.height, i.x1 * box + safezone, i.y1 * box + safezone, box, box);
+					ctx.drawImage(sprites.portal, 0, 0, sprites.portal.width, sprites.portal.height, i.x2 * box + safezone, i.y2 * box + safezone, box, box);
 				} catch {
 					drawing.putPixel(i.x1, i.y1, 'purple');
 					drawing.putPixel(i.x2, i.y2, 'purple');
@@ -836,7 +838,7 @@ function redraw() {
 		for (let i of catapult) {
 			if (resourcePack.use) {
 				try {
-					context.drawImage(sprites.catapult, 0, 0, 7, 7, i.x * box + safezone, i.y * box + safezone, box, box);
+					ctx.drawImage(sprites.catapult, 0, 0, sprites.catapult.width, sprites.catapult.height, i.x * box + safezone, i.y * box + safezone, box, box);
 				} catch {
 					drawing.putPixel(i.x, i.y, 'blue');
 					resourcePack.use = false;
@@ -849,7 +851,7 @@ function redraw() {
 		for (let i of bombs) {
 			if (resourcePack.use) {
 				try {
-					context.drawImage(sprites.bomb, 0, 0, 7, 7, i.x * box + safezone, i.y * box + safezone, box, box);
+					ctx.drawImage(sprites.bomb, 0, 0, sprites.bomb.width, sprites.bomb.height, i.x * box + safezone, i.y * box + safezone, box, box);
 				} catch {
 					drawing.putPixel(i.x, i.y, 'red');
 					resourcePack.use = false;
@@ -1003,7 +1005,7 @@ function redraw() {
 	} else {
 		if (resourcePack.use) {
 				try {
-					context.drawImage(sprites.player, 0, 0, 7, 7, player.x * box + safezone, player.y * box + safezone, box, box);
+					ctx.drawImage(sprites.player, 0, 0, sprites.player.width, sprites.player.height, player.x * box + safezone, player.y * box + safezone, box, box);
 				} catch {
 					drawing.putPixel(player.x, player.y, 'green');
 					resourcePack.use = false;
@@ -1020,7 +1022,7 @@ function redraw() {
 	}
 	for (let i of bombs) {
 		if ((player.x == i.x) && (player.y == i.y)) {
-			context.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38 + safezone, player.y * box - 53 + safezone, 83, 50);
+			ctx.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38 + safezone, player.y * box - 53 + safezone, 83, 50);
 		}
 	}
 
@@ -1029,8 +1031,8 @@ function redraw() {
 
 // Очищает экран
 function clearScreen(color) {
-	context.fillStyle = color;
-	context.fillRect(0, 0, mapWidth * box + safezone, mapHeight * box + safezone);
+	ctx.fillStyle = color;
+	ctx.fillRect(0, 0, mapWidth * box + safezone, mapHeight * box + safezone);
 }
 
 // Обработчик нажатий на кнопки
