@@ -782,7 +782,9 @@ function redraw() {
 			if (map.get(`${x}:${y}`).isWall) {
 				if (resourcePack.use) {
 					try {
-						ctx.drawImage(sprites.wall, 0, 0, sprites.wall.width, sprites.wall.height, x * box + safezone, y * box + safezone, box, box);
+						if (gameMode != 'powerFailure') {
+							ctx.drawImage(sprites.wall, 0, 0, sprites.wall.width, sprites.wall.height, x * box + safezone, y * box + safezone, box, box);
+						}
 					} catch {
 						drawing.putPixel(x, y, map.get(`${x}:${y}`).color);
 						resourcePack.use = false;
@@ -1015,11 +1017,7 @@ function redraw() {
 				drawing.putPixel(player.x, player.y, 'green');
 			}
 	}
-	if (gameMode == 'powerFailure') {
-		drawing.putPixel(-1, -1, 'black');
-	} else {
-		drawing.putPixel(-1, -1, 'white');
-	}
+	drawing.putPixel(-1, -1, 'white');
 	for (let i of bombs) {
 		if ((player.x == i.x) && (player.y == i.y)) {
 			ctx.drawImage(bombCalloutTop, 0, 0, 251, 150, player.x * box - 38 + safezone, player.y * box - 53 + safezone, 83, 50);
@@ -1032,7 +1030,7 @@ function redraw() {
 // Очищает экран
 function clearScreen(color) {
 	ctx.fillStyle = color;
-	ctx.fillRect(0, 0, mapWidth * box + safezone, mapHeight * box + safezone);
+	ctx.fillRect(safezone, safezone, mapWidth * box, mapHeight * box + safezone);
 }
 
 // Обработчик нажатий на кнопки
@@ -1176,26 +1174,36 @@ function changeGameMode(to) {
 			case 'classic':
 				gameMode = 'classic';
 				player.points = 0;
+				document.getElementById('resourcepack').checked = resourcePack.use;
+				document.getElementById('resourcepack').disabled = false;
 				generateMap();
 				break;
 			case 'gravity':
 				gameMode = 'gravity';
 				player.points = 0;
+				document.getElementById('resourcepack').checked = resourcePack.use;
+				document.getElementById('resourcepack').disabled = false;
 				generateMap();
 				break;
 			case 'zen':
 				gameMode = 'zen';
 				player.points = 0;
+				document.getElementById('resourcepack').checked = resourcePack.use;
+				document.getElementById('resourcepack').disabled = false;
 				generateMap();
 				break;
 			case 'powerFailure':
 				gameMode = 'powerFailure';
 				player.points = 0;
+				document.getElementById('resourcepack').checked = false;
+				document.getElementById('resourcepack').disabled = true;
 				generateMap();
 				break;
 			case 'survival':
 				gameMode = 'survival';
 				player.points = 0;
+				document.getElementById('resourcepack').checked = resourcePack.use;
+				document.getElementById('resourcepack').disabled = false;
 				generateMap();
 				break;
 		}
