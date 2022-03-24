@@ -8,6 +8,7 @@ const right = document.getElementById('right');
 const down = document.getElementById('down');
 const left = document.getElementById('left');
 const sounds = document.getElementById('sounds');
+
 // Массив с монетами
 let coins = [];
 // Массив с парами порталов
@@ -16,11 +17,13 @@ let portalPairs = [];
 let catapult = [];
 // Массив с бомбами
 let bombs = [];
+
 // Кол-во игровых объектов
 let coinsCount = 10;
 let portalPairsCount = 1;
 let catapultCount = 2;
 let bombsCount = 10;
+
 // Прочие настройки. Балуйся.
 let bugInfo = false;
 let gameMode = 'classic';
@@ -29,12 +32,47 @@ let box = 7;
 let mapWidth = 48;
 let mapHeight = 48;
 let safezone = 50;
+let resourcePack = {
+	useResourcePack: true,
+	get use() {
+		return resourcePack.useResourcePack;
+	},
+	set use(value) {
+		resourcePack.useResourcePack = value;
+	},
+};
 let pointsPerCoin = 10;
 canvas.width = mapWidth * box + safezone;
 canvas.height = mapHeight * box + safezone;
+
 // Графика и т.п.
+class ResourcepackError extends Error {
+	constructor() {
+		super(`Unable to find resource file(s). Standard (simplified) textures will be used.`);
+		this.name = 'ResourcepackError';
+	}
+}
 let bombCalloutTop = new Image(251, 150);
+let sprites = {
+	player: new Image(7, 7),
+	finish: new Image(7, 7),
+	wall: new Image(7, 7),
+	coin: new Image(7, 7),
+	portal: new Image(7, 7),
+	catapult: new Image(7, 7),
+	bomb: new Image(7, 7),
+};
 bombCalloutTop.src = 'bombcallouttop.png';
+if (resourcePack.use) {
+	sprites.player.src = 'resources/player.png';
+	sprites.finish.src = 'resources/finish.png';
+	sprites.wall.src = 'resources/wall.png';
+	sprites.coin.src = 'resources/coin.png';
+	sprites.portal.src = 'resources/portal.png';
+	sprites.catapult.src = 'resources/catapult.png';
+	sprites.bomb.src = 'resources/bomb.png';
+}
+
 // Другое
 let highlighting = false;
 
@@ -433,12 +471,6 @@ let player = {
 				playSound('catapult.mp3');
 			}
 		}
-		for (let i of bombs) {
-			if ((player.x == i.x) && (player.y == i.y)) {
-
-				//i.activate();
-			}
-		}
 	},
 };
 
@@ -746,24 +778,86 @@ function redraw() {
 	for (let y = 0; y < mapHeight; y++) {
 		for (let x = 0; x < mapWidth; x++) {
 			if (map.get(`${x}:${y}`).isWall) {
-				drawing.putPixel(x, y, map.get(`${x}:${y}`).color);
+				if (resourcePack.use) {
+					try {
+						context.drawImage(sprites.wall, 0, 0, 7, 7, x * box + safezone, y * box + safezone, box, box);
+					} catch {
+						drawing.putPixel(x, y, map.get(`${x}:${y}`).color);
+						resourcePack.use = false;
+						console.error(new ResourcepackError());
+					}
+				} else {
+					drawing.putPixel(x, y, map.get(`${x}:${y}`).color);
+				}
 			}
 		}
 	}
 	if (gameMode != 'powerFailure') {
-		drawing.putPixel(finish.x, finish.y, 'cyan');
+		if (resourcePack.use) {
+			try {
+				context.drawImage(sprites.finish, 0, 0, 7, 7, finish.x * box + safezone, finish.y * box + safezone, box, box);
+			} catch {
+				drawing.putPixel(finish.x, finish.y, 'cyan');
+				resourcePack.use = false;
+				console.error(new ResourcepackError());
+			}
+		} else {
+			drawing.putPixel(finish.x, finish.y, 'cyan');
+		}
 		for (let i of coins) {
-			drawing.putPixel(i.x, i.y, 'gold');
+			if (resourcePack.use) {
+				try {
+					context.drawImage(sprites.coin, 0, 0, 7, 7, i.x * box + safezone, i.y * box + safezone, box, box);
+				} catch {
+					drawing.putPixel(i.x, i.y, 'gold');
+					resourcePack.use = false;
+					console.error(new ResourcepackError());
+				}
+			} else {
+				drawing.putPixel(i.x, i.y, 'gold');
+			}
 		}
 		for (let i of portalPairs) {
-			drawing.putPixel(i.x1, i.y1, 'purple');
-			drawing.putPixel(i.x2, i.y2, 'purple');
+			if (resourcePack.use) {
+				try {
+					context.drawImage(sprites.portal, 0, 0, 7, 7, i.x1 * box + safezone, i.y1 * box + safezone, box, box);
+					context.drawImage(sprites.portal, 0, 0, 7, 7, i.x2 * box + safezone, i.y2 * box + safezone, box, box);
+				} catch {
+					drawing.putPixel(i.x1, i.y1, 'purple');
+					drawing.putPixel(i.x2, i.y2, 'purple');
+					resourcePack.use = false;
+					console.error(new ResourcepackError());
+				}
+			} else {
+				drawing.putPixel(i.x1, i.y1, 'purple');
+				drawing.putPixel(i.x2, i.y2, 'purple');
+			}
 		}
 		for (let i of catapult) {
-			drawing.putPixel(i.x, i.y, 'blue');
+			if (resourcePack.use) {
+				try {
+					context.drawImage(sprites.catapult, 0, 0, 7, 7, i.x * box + safezone, i.y * box + safezone, box, box);
+				} catch {
+					drawing.putPixel(i.x, i.y, 'blue');
+					resourcePack.use = false;
+					console.error(new ResourcepackError());
+				}
+			} else {
+				drawing.putPixel(i.x, i.y, 'blue');
+			}
 		}
 		for (let i of bombs) {
-			drawing.putPixel(i.x, i.y, 'red');
+			if (resourcePack.use) {
+				try {
+					context.drawImage(sprites.bomb, 0, 0, 7, 7, i.x * box + safezone, i.y * box + safezone, box, box);
+				} catch {
+					drawing.putPixel(i.x, i.y, 'red');
+					resourcePack.use = false;
+					console.error(new ResourcepackError());
+				}
+			} else {
+				drawing.putPixel(i.x, i.y, 'red');
+			}
 		}
 	} else { // RTX 
 		let radius = 5;
@@ -907,7 +1001,17 @@ function redraw() {
 			}
 		}
 	} else {
-		drawing.putPixel(player.x, player.y, 'green');
+		if (resourcePack.use) {
+				try {
+					context.drawImage(sprites.player, 0, 0, 7, 7, player.x * box + safezone, player.y * box + safezone, box, box);
+				} catch {
+					drawing.putPixel(player.x, player.y, 'green');
+					resourcePack.use = false;
+					console.error(new ResourcepackError());
+				}
+			} else {
+				drawing.putPixel(player.x, player.y, 'green');
+			}
 	}
 	if (gameMode == 'powerFailure') {
 		drawing.putPixel(-1, -1, 'black');
